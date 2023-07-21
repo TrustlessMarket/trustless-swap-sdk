@@ -1,18 +1,18 @@
 import {
-  Currency,
-  CurrencyAmount,
-  Percent,
-  Token,
-  TradeType,
-} from '@uniswap/sdk-core'
+  Percent
+} from './entities/fractions/percent'
+import {TradeType} from './constants'
+import {Token} from './entities/token'
+import {Currency} from './entities/currency'
+import {CurrencyAmount} from './entities/fractions/currencyAmount'
+import {Pool} from './entities/pool'
+import {Route} from './entities/route'
+import {Trade} from './entities/trade'
+import {SwapQuoter} from './entities/quoter'
 import {
-  Pool,
-  Route,
   SwapOptions,
-  SwapQuoter,
-  SwapRouter,
-  Trade,
-} from '@uniswap/v3-sdk'
+  SwapRouter
+} from './entities/swapRouter'
 import { ethers } from 'ethers'
 import JSBI from 'jsbi'
 

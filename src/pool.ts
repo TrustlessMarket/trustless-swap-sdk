@@ -1,5 +1,5 @@
-import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
-import { computePoolAddress } from '@uniswap/v3-sdk'
+import IUniswapV3PoolABI from './IUniswapV3Pool.json'
+import { computePoolAddress } from './utils/computePoolAddress'
 import { ethers } from 'ethers'
 
 import {tokenSwap,CurrentConfig} from './config'
@@ -25,8 +25,7 @@ export async function getPoolInfo(): Promise<PoolInfo> {
     factoryAddress:CurrentConfig.POOL_FACTORY_CONTRACT_ADDRESS,
     tokenA: tokenSwap.in,
     tokenB: tokenSwap.out,
-    fee: tokenSwap.poolFee,
-    initCodeHashManualOverride:"0x04759a882be3a45ff74719de5c82516d29af4b3480d076fc0c57b2fdab813bc7",
+    fee: tokenSwap.poolFee
   })
 
   const poolContract = new ethers.Contract(

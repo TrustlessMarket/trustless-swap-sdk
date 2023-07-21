@@ -1,6 +1,5 @@
-import { Token } from '@uniswap/sdk-core'
-import { FeeAmount } from '@uniswap/v3-sdk'
-
+import { Token } from './entities/token'
+import { FeeAmount } from './constants'
 
 //import { USDC_TOKEN, WETH_TOKEN } from './constants'
 
@@ -9,7 +8,6 @@ export enum Environment {
   LOCAL,
   TESTNET,
   MAINNET,
-
 }
 
 // Inputs that configure this example to run

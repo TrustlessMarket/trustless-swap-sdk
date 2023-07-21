@@ -1,6 +1,6 @@
 // This file contains code to easily connect to and get information from a wallet on chain
 
-import {Currency} from '@uniswap/sdk-core'
+import {Currency} from './entities/currency'
 import {BigNumber, ethers} from 'ethers'
 import {providers} from 'ethers'
 import JSBI from 'jsbi'
