@@ -118,6 +118,7 @@ export function choiceConFig(environment: number)  {
   else if(environment == Environment.MAINNET){
     CurrentConfig = mainnetConfig
   }
+  resetTOkenSwap()
 }
 
 export interface walletConfig{

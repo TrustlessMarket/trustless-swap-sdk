@@ -83,7 +83,7 @@ async function sendTransactionViaWallet(
   if (transaction.value) {
     transaction.value = BigNumber.from(transaction.value)
   }
-    //connectWallet()
+    connectWallet()
   const txRes = await wallet.sendTransaction(transaction)
 
   let receipt = null
