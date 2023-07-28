@@ -1,6 +1,4 @@
-import { TradeType } from './constants'
-import { Token } from './entities/token'
-import { Trade } from './entities/trade'
+import { Token, TradeType,Trade } from 'trustless-swap-sdk'
 import { BigNumber, ethers } from 'ethers'
 
 const MAX_DECIMALS = 4

@@ -2,5 +2,11 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../examples" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../sdk-core" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/example/advance_trading/node_modules/trustless-swap-sdk" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/example/advance_trading/node_modules/trustless-swap-sdk/example/trading/node_modules/trustless-swap-sdk" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/example/trading/node_modules/trustless-swap-sdk" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../v3-sdk" vcs="Git" />
   </component>
 </project>

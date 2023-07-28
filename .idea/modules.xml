@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../examples/.idea/examples.iml" filepath="$PROJECT_DIR$/../examples/.idea/examples.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../sdk-core/.idea/sdk-core.iml" filepath="$PROJECT_DIR$/../sdk-core/.idea/sdk-core.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/trustless-swap-sdk.iml" filepath="$PROJECT_DIR$/.idea/trustless-swap-sdk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../v3-sdk/.idea/v3-sdk.iml" filepath="$PROJECT_DIR$/../v3-sdk/.idea/v3-sdk.iml" />
     </modules>
   </component>
 </project>

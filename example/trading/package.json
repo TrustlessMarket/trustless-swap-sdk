@@ -10,6 +10,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
+    "react-select": "^5.7.4",
     "trustless-swap-sdk": "file:../..",
     "typescript": "^4.4.2"
   },
@@ -20,7 +21,6 @@
     "install:chain": "curl -L https://foundry.paradigm.xyz | bash && clear && echo $0 | exec && foundryup",
     "start:chain": "anvil --chain-id 1337 --fork-url"
   },
-
   "browserslist": {
     "production": [
       ">0.2%",

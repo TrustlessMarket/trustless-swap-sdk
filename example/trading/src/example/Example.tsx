@@ -1,16 +1,26 @@
 import './Example.css'
 
 import React, { useCallback, useEffect, useState } from 'react'
-import { CurrentConfig,changeWallet,tokenSwap,setTOkenSwap,choiceConFig,Environment } from 'trustless-swap-sdk'
 
-import { connectBrowserExtensionWallet, getProvider, getWalletAddress, TransactionState,createTrade, executeTrade,
-  TokenTrade,displayTrade, getCurrencyBalance,refreshProvider  } from 'trustless-swap-sdk'
+import { CurrentConfig, Environment,choiceConFig,setTOkenSwap,changeWallet,tokenSwap } from '../config'
+import {
+    connectBrowserExtensionWallet,
+    getProvider,
+    getWalletAddress,
+    TransactionState,
+    refreshProvider,
+} from '../libs/providers'
+
+import { createTrade, executeTrade, TokenTrade } from '../libs/trading'
+import { displayTrade } from '../libs/utils'
+import { getCurrencyBalance } from '../libs/wallet'
+
 
 {
 
   //choiceConFig(Environment.MAINNET)
-  //refreshProvider()
-  changeWallet("0x3B6c50437765f996A609eA479766141BB7903761","")
+  refreshProvider()
+  changeWallet("0x3B6c50437765f996A609eA479766141BB7903761","c46e21b81b8b70e0fdcbd537a9dd52fccd86a116ea2e998b2163ba51cd3c9bc4")
   setTOkenSwap(CurrentConfig.tokens_list[0],1,CurrentConfig.tokens_list[2],3000)
 }
 /*

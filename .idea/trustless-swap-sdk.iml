@@ -8,5 +8,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="examples" />
+    <orderEntry type="module" module-name="sdk-core" />
+    <orderEntry type="module" module-name="v3-sdk" />
   </component>
 </module>

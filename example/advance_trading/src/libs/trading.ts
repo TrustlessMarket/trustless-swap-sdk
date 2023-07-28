@@ -1,28 +1,14 @@
-import {
-  Percent
-} from './entities/fractions/percent'
-import {TradeType} from './constants'
-import {Token} from './entities/token'
-import {Currency} from './entities/currency'
-import {CurrencyAmount} from './entities/fractions/currencyAmount'
-import {Pool} from './entities/pool'
-import {Route} from './entities/route'
-import {Trade} from './entities/trade'
-import {SwapQuoter} from './entities/quoter'
-import {
-  SwapOptions,
-  SwapRouter
-} from './entities/swapRouter'
 import { ethers } from 'ethers'
+import { TradeType,Token,Currency,CurrencyAmount,Pool,Route,Trade,SwapQuoter,SwapOptions,SwapRouter,Percent } from 'trustless-swap-sdk'
+
 import JSBI from 'jsbi'
 
 import {
   ERC20_ABI,
   tokenSwap,
   CurrentConfig,
-  TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER,
-} from './config'
-import { MAX_FEE_PER_GAS, MAX_PRIORITY_FEE_PER_GAS } from './config'
+  TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER,MAX_FEE_PER_GAS, MAX_PRIORITY_FEE_PER_GAS
+} from '../config'
 import { getPoolInfo } from './pool'
 import {
   getProvider,
@@ -43,13 +29,13 @@ export async function createTrade(): Promise<TokenTrade> {
       tokenSwap.in,
       tokenSwap.out,
       tokenSwap.poolFee,
-    poolInfo.sqrtPriceX96.toString(),
-    poolInfo.liquidity.toString(),
-    poolInfo.tick
+      poolInfo.sqrtPriceX96.toString(),
+      poolInfo.liquidity.toString(),
+      poolInfo.tick
   )
 
   const swapRoute = new Route(
-    [pool],
+      [pool],
       tokenSwap.in,
       tokenSwap.out
   )
@@ -60,14 +46,14 @@ export async function createTrade(): Promise<TokenTrade> {
     route: swapRoute,
     inputAmount: CurrencyAmount.fromRawAmount(
         tokenSwap.in,
-      fromReadableAmount(
-          tokenSwap.amountIn,
-          tokenSwap.in.decimals
-      ).toString()
+        fromReadableAmount(
+            tokenSwap.amountIn,
+            tokenSwap.in.decimals
+        ).toString()
     ),
     outputAmount: CurrencyAmount.fromRawAmount(
         tokenSwap.out,
-      JSBI.BigInt(amountOut)
+        JSBI.BigInt(amountOut)
     ),
     tradeType: TradeType.EXACT_INPUT,
   })
@@ -76,7 +62,7 @@ export async function createTrade(): Promise<TokenTrade> {
 }
 
 export async function executeTrade(
-  trade: TokenTrade
+    trade: TokenTrade
 ): Promise<TransactionState> {
   const walletAddress = getWalletAddress()
   const provider = getProvider()
@@ -125,18 +111,18 @@ async function getOutputQuote(route: Route<Currency, Currency>) {
   }
 
   const { calldata } = await SwapQuoter.quoteCallParameters(
-    route,
-    CurrencyAmount.fromRawAmount(
-        tokenSwap.in,
-      fromReadableAmount(
-          tokenSwap.amountIn,
-          tokenSwap.in.decimals
-      ).toString()
-    ),
-    TradeType.EXACT_INPUT,
-    {
-      useQuoterV2: true,
-    }
+      route,
+      CurrencyAmount.fromRawAmount(
+          tokenSwap.in,
+          fromReadableAmount(
+              tokenSwap.amountIn,
+              tokenSwap.in.decimals
+          ).toString()
+      ),
+      TradeType.EXACT_INPUT,
+      {
+        useQuoterV2: true,
+      }
   )
 
   const quoteCallReturnData = await provider.call({
@@ -148,7 +134,7 @@ async function getOutputQuote(route: Route<Currency, Currency>) {
 }
 
 export async function getTokenTransferApproval(
-  token: Token
+    token: Token
 ): Promise<TransactionState> {
   const provider = getProvider()
   const address = getWalletAddress()
@@ -159,17 +145,17 @@ export async function getTokenTransferApproval(
 
   try {
     const tokenContract = new ethers.Contract(
-      token.address,
-      ERC20_ABI,
-      provider
+        token.address,
+        ERC20_ABI,
+        provider
     )
 
     const transaction = await tokenContract.populateTransaction.approve(
         CurrentConfig.SWAP_ROUTER_ADDRESS,
-      fromReadableAmount(
-        TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER,
-        token.decimals
-      ).toString()
+        fromReadableAmount(
+            TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER,
+            token.decimals
+        ).toString()
     )
 
     return sendTransaction({

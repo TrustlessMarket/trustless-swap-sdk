@@ -1,5 +1,4 @@
-import { Token } from './entities/token'
-import { FeeAmount } from './constants'
+import { Token,FeeAmount } from 'trustless-swap-sdk'
 
 //import { USDC_TOKEN, WETH_TOKEN } from './constants'
 
