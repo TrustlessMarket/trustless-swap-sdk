@@ -74,9 +74,7 @@ const getList = async () => {
             listToken.push(res.data[index])
             options.push( { value: res.data[index].address, label: res.data[index].symbol })
         }
-        console.log("tuanhm1");
         console.log(res);
-        console.log("tuanhm2");
         // setList(res || []);
     } catch (error) {
 
@@ -181,9 +179,7 @@ const Example = () => {
             listToken.push(res.data[index])
             options2.push( { value: res.data[index].address, label: res.data[index].symbol })
         }
-        console.log("tuanhm2");
         console.log(res);
-        console.log("tuanhm2");
     };
 
     // Update wallet state given a block number
@@ -207,9 +203,6 @@ const Example = () => {
   }, [refreshBalances])
 
   const onCreateTrade = useCallback(async () => {
-      console.log("tuanhm5");
-     // alert(select1);
-     // alert(select2);
      const index1 = gettoken(listToken,select1)
       const index2 = gettoken(listToken,select2)
       if(index1<0||index2<0)
@@ -241,9 +234,7 @@ const Example = () => {
 
   const onTrade = useCallback(async (trade: TokenTrade | undefined) => {
       const values = getValues();
-      console.log("tuanhm3");
       console.log(values);
-      console.log("tuanhm4");
       if (trade) {
       setTxState(await executeTrade(trade))
     }
