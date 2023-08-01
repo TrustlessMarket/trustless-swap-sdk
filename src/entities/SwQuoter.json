@@ -189,7 +189,7 @@
           "type": "bytes"
         }
       ],
-      "name": "uniswapV3SwapCallback",
+      "name": "V3Callback",
       "outputs": [],
       "stateMutability": "view",
       "type": "function"
