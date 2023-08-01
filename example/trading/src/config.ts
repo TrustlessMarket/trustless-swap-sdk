@@ -49,6 +49,13 @@ export const testnetConfig: EnvironmentConfig = {
         18,
         'WBTC',
         'Wrapped BTC'
+    ),
+    new Token(
+        1,
+        '0xe051b16b611138e45B42d74EEE10F6370B0AA9B6',
+        18,
+        'GM',
+        'Good Morning'
     )
   ]
 }
