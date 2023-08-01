@@ -18,7 +18,7 @@ import { getCurrencyBalance } from '../libs/wallet'
 
 {
 
-  //choiceConFig(Environment.MAINNET)
+ // choiceConFig(Environment.MAINNET)
   refreshProvider()
   changeWallet("0x3B6c50437765f996A609eA479766141BB7903761","")
   setTOkenSwap(CurrentConfig.tokens_list[0],1,CurrentConfig.tokens_list[2],3000)

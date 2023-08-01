@@ -56,7 +56,8 @@ export async function createTrade(): Promise<TokenTrade> {
         JSBI.BigInt(amountOut)
     ),
     tradeType: TradeType.EXACT_INPUT,
-  })
+  });
+  console.log(uncheckedTrade.outputAmount.toExact());
 
   return uncheckedTrade
 }

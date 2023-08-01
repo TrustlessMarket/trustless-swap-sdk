@@ -39,7 +39,7 @@ export const testnetConfig: EnvironmentConfig = {
     new Token(
         1,
         '0xB68BB951883A7c5f24C7e2Cca8d9A68CFC606F41',
-        6,
+        18,
         'USDC',
         'USD//C'
     ),
@@ -68,7 +68,7 @@ export const mainnetConfig: EnvironmentConfig = {
         'Wrapped Ether'),
     new Token(
         1,
-        '0xe8B280Ebb57bE03adC9d87e207BCD689EfADef96',
+        '0x53C653CFF22134bC332Dd0fC6Ce840a9Fe0F05d6',
         18,
         'USDC',
         'USD//C'
@@ -76,7 +76,7 @@ export const mainnetConfig: EnvironmentConfig = {
     ,
     new Token(
         1,
-        '0x111808AbE352c8003e0eFfcc04998EaB26Cebe3c',
+        '0xdb380837095fbfAA4Ea65e7388Ef35A5FCad0334',
         18,
         'WBTC',
         'Wrapped BTC'
@@ -88,7 +88,7 @@ export let CurrentConfig = testnetConfig
 export let tokenSwap ={
 in: CurrentConfig.tokens_list[0],
       amountIn: 1,
-      out: CurrentConfig.tokens_list[1],
+      out: CurrentConfig.tokens_list[2],
       poolFee: FeeAmount.MEDIUM,
 }
 export function setTOkenSwap(inputToken: Token,amountIn: number,outToken: Token, poolFee:number)  {
@@ -105,7 +105,7 @@ export function resetTOkenSwap()
   tokenSwap ={
     in: CurrentConfig.tokens_list[0],
     amountIn: 1,
-    out: CurrentConfig.tokens_list[1],
+    out: CurrentConfig.tokens_list[2],
     poolFee: FeeAmount.MEDIUM,
   }
 }

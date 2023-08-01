@@ -1,4 +1,4 @@
-import IUniswapV3PoolABI from './IUniswapV3Pool.json'
+import IUniswapV3PoolABI from './IV3Pool.json'
 import { computePoolAddress } from 'trustless-swap-sdk'
 import { ethers } from 'ethers'
 

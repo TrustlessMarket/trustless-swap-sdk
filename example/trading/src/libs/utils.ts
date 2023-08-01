@@ -11,10 +11,11 @@ export function fromReadableAmount(
 }
 
 export function toReadableAmount(rawAmount: number, decimals: number): string {
-  return ethers.utils.formatUnits(rawAmount, decimals).slice(0, MAX_DECIMALS)
+  return ethers.utils.formatUnits(rawAmount, decimals)
 }
 
 export function displayTrade(trade: Trade<Token, Token, TradeType>): string {
+
   return `${trade.inputAmount.toExact()} ${
     trade.inputAmount.currency.symbol
   } for ${trade.outputAmount.toExact()} ${trade.outputAmount.currency.symbol}`
