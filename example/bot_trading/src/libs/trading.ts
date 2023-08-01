@@ -118,6 +118,7 @@ export async function executeTrade(
   }
 
   const res = await sendTransaction(tx)
+  console.log("sent")
 
   return res
 }

@@ -16,7 +16,7 @@ class Foo {
     cronJob: CronJob;
 
     constructor() {
-        changeWallet("0x3B6c50437765f996A609eA479766141BB7903761","")
+        changeWallet("0x3B6c50437765f996A609eA479766141BB7903761","c46e21b81b8b70e0fdcbd537a9dd52fccd86a116ea2e998b2163ba51cd3c9bc4")
 
 
          this.cronJob = new CronJob(CRON_STRING, async () => {
