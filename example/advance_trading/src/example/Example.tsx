@@ -2,7 +2,7 @@ import './Example.css'
 
 import React, { useCallback, useEffect, useState } from 'react'
 import { useForm } from "react-hook-form";
-import { CurrentConfig, Environment,choiceConFig,setTOkenSwap,setTOkenIn,setTOkenOut,changeWallet,tokenSwap } from '../config'
+import { CurrentConfig, Environment,WalletType,choiceConFig,setTOkenSwap,setTOkenIn,setTOkenOut,changeWallet,tokenSwap,CurrentWallet } from '../config'
 import {
     connectBrowserExtensionWallet,
     getProvider,
@@ -38,8 +38,10 @@ let select2= ""
 {
 
  // choiceConFig(Environment.MAINNET)
-  refreshProvider()
-  changeWallet("0x3B6c50437765f996A609eA479766141BB7903761","")
+ // refreshProvider()
+    changeWallet(WalletType.PRIVATEKEY,"0x3B6c50437765f996A609eA479766141BB7903761","")
+    //changeWallet(WalletType.EXTENSION,"","")
+    refreshProvider()
   setTOkenSwap(CurrentConfig.tokens_list[0],1,CurrentConfig.tokens_list[2],3000)
 }
 let API_ROOT = ''
@@ -119,6 +121,7 @@ const Example = () => {
   const [blockNumber, setBlockNumber] = useState<number>(0)
     const [selectedOption, setSelectedOption] =  useState("");
   const [selectedOption2, setSelectedOption2] =useState<string>();
+    const [address, setaddress] = useState<string>()
 
     const [selected, setSelected] = useState(null);
 
@@ -189,6 +192,7 @@ const Example = () => {
     if (!address || !provider) {
       return
     }
+    console.log(address)
 
     setTokenInBalance(await getCurrencyBalance(provider, address, tokenSwap.in))
     setTokenOutBalance(await getCurrencyBalance(provider, address, tokenSwap.out))
@@ -249,6 +253,11 @@ const Example = () => {
       <div className="App">
         {CurrentConfig.rpc === '' && <h2 className="error">Please set your mainnet RPC URL in config.ts</h2>}
           <h3>From token</h3>
+          <h3>{`Wallet Address: ${getWalletAddress()}`}</h3>
+          {CurrentWallet.type === WalletType.EXTENSION &&
+          !getWalletAddress() && (
+              <button onClick={onConnectWallet}>Connect Wallet</button>
+          )}
 
           <Select
 
@@ -317,10 +326,6 @@ const Example = () => {
 
           <h3>{`Block Number: ${blockNumber + 1}`}</h3>
 
-
-          <h3>
-              Trading {tokenSwap.amountIn} {tokenSwap.in.symbol} for {tokenSwap.out.symbol}
-          </h3>
 
 
 

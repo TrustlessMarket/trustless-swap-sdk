@@ -4,9 +4,13 @@ import { Token,FeeAmount } from 'trustless-swap-sdk'
 
 // Sets if the example should run locally or on chain
 export enum Environment {
-  LOCAL,
+   LOCAL,
   TESTNET,
   MAINNET,
+}
+export enum WalletType {
+  EXTENSION,
+  PRIVATEKEY,
 }
 
 // Inputs that configure this example to run
@@ -39,7 +43,7 @@ export const testnetConfig: EnvironmentConfig = {
     new Token(
         1,
         '0xB68BB951883A7c5f24C7e2Cca8d9A68CFC606F41',
-        6,
+        18,
         'USDC',
         'USD//C'
     ),
@@ -129,20 +133,22 @@ export function choiceConFig(environment: number)  {
   resetTOkenSwap()
 }
 
+//type=extension,type=privatekey
 export interface walletConfig{
   address: string
-  privateKey: string
+  privateKey: string,
+  type:WalletType,
 }
-
 export let CurrentWallet:walletConfig =
 {
   address: '',
-  privateKey:
-  '',
+  privateKey: '',
+  type:WalletType.PRIVATEKEY,
 }
-export function changeWallet(address: string,privateKey: string)  {
+export function changeWallet(type:WalletType,address: string,privateKey: string)  {
   CurrentWallet.address = address
   CurrentWallet.privateKey = privateKey
+  CurrentWallet.type = type
 }
 
 
@@ -170,11 +176,11 @@ export const WETH_ABI = [
   // Unwrap ETH
   'function withdraw(uint wad) public',
 ]
-
+ 
 // Transactions
 
-export const MAX_FEE_PER_GAS = 100000000000
-export const MAX_PRIORITY_FEE_PER_GAS = 100000000000
+export const MAX_FEE_PER_GAS = "100000000000"
+export const MAX_PRIORITY_FEE_PER_GAS = "100000000000"
 export const TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER = 2000
 
 

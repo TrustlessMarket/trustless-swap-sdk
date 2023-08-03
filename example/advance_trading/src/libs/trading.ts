@@ -70,6 +70,8 @@ export async function executeTrade(
   if (!walletAddress || !provider) {
     throw new Error('Cannot execute a trade without a connected wallet')
   }
+  
+
 
   // Give approval to the router to spend the token
   const tokenApproval = await getTokenTransferApproval(tokenSwap.in)
@@ -78,6 +80,8 @@ export async function executeTrade(
   if (tokenApproval !== TransactionState.Sent) {
     return TransactionState.Failed
   }
+  
+
 
   const options: SwapOptions = {
     slippageTolerance: new Percent(50, 10_000), // 50 bips, or 0.50%
