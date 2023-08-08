@@ -1,4 +1,4 @@
-import IUniswapV3PoolABI from './IV3Pool.json'
+import IV3PoolABI from './IV3Pool.json'
 import {computePoolAddress, Token} from 'trustless-swap-sdk'
 import { ethers } from 'ethers'
 
@@ -30,7 +30,7 @@ export async function getPoolInfoByToken(tokenA: Token,tokenB:Token ): Promise<P
 
   const poolContract = new ethers.Contract(
       currentPoolAddress,
-      IUniswapV3PoolABI.abi,
+      IV3PoolABI.abi,
       provider
   )
 
@@ -69,7 +69,7 @@ export async function getPoolInfo(): Promise<PoolInfo> {
 
   const poolContract = new ethers.Contract(
       currentPoolAddress,
-      IUniswapV3PoolABI.abi,
+      IV3PoolABI.abi,
       provider
   )
 
