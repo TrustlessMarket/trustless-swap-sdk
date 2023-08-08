@@ -35,6 +35,29 @@ export const TICK_SPACINGS: { [amount in FeeAmount]: number } = {
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
 export const POOL_INIT_CODE_HASH = '0x04759a882be3a45ff74719de5c82516d29af4b3480d076fc0c57b2fdab813bc7'
 
-export const FACTORY_ADDRESS = '0x1F98431c8aD98523631AE4a59f267346ea31F984'
+export const FACTORY_ADDRESS = '0x9D921bF7460d1FcfF77d88edd4D34cD1e2F56BDc'
 
+// ABI's
+
+export const ERC20_ABI = [
+  // Read-Only Functions
+  'function balanceOf(address owner) view returns (uint256)',
+  'function decimals() view returns (uint8)',
+  'function symbol() view returns (string)',
+
+  // Authenticated Functions
+  'function transfer(address to, uint amount) returns (bool)',
+  'function approve(address _spender, uint256 _value) returns (bool)',
+
+  // Events
+  'event Transfer(address indexed from, address indexed to, uint amount)',
+]
+
+export const WETH_ABI = [
+  // Wrap ETH
+  'function deposit() payable',
+
+  // Unwrap ETH
+  'function withdraw(uint wad) public',
+]
 

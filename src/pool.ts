@@ -1,8 +1,8 @@
 import IV3PoolABI from './IV3Pool.json'
-import { computePoolAddress } from 'trustless-swap-sdk'
+import { computePoolAddress } from './utils/computePoolAddress'
 import { ethers } from 'ethers'
 
-import {tokenSwap,CurrentConfig} from '../config'
+import {tokenSwap,CurrentConfig} from './config'
 import { getProvider } from './providers'
 
 interface PoolInfo {

@@ -34,6 +34,10 @@ export async function createTrade(): Promise<TokenTrade> {
       poolInfo.tick
   )
 
+  console.log("poolInfo1")
+  console.log(poolInfo)
+
+
   const swapRoute = new Route(
       [pool],
       tokenSwap.in,
@@ -128,6 +132,9 @@ async function getOutputQuote(route: Route<Currency, Currency>) {
         useQuoterV2: true,
       }
   )
+  //console.log("calldata3")
+ // alert(calldata)
+  //console.log("calldata2")
 
   const quoteCallReturnData = await provider.call({
     to: CurrentConfig.QUOTER_CONTRACT_ADDRESS,

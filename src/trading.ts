@@ -1,6 +1,14 @@
 import { ethers } from 'ethers'
-import { TradeType,Token,Currency,CurrencyAmount,Pool,Route,Trade,SwapQuoter,SwapOptions,SwapRouter,Percent } from 'trustless-swap-sdk'
-
+import { SwapOptions,SwapRouter } from './entities/swapRouter'
+import { Percent } from './entities/fractions/percent'
+import { TradeType } from './constants'
+import { Token } from './entities/token'
+import { Trade } from './entities/trade'
+import { Currency } from './entities/currency'
+import { CurrencyAmount } from './entities/fractions/currencyAmount'
+import { Pool } from './entities/pool'
+import { Route } from './entities/route'
+import { SwapQuoter } from './entities/quoter'
 import JSBI from 'jsbi'
 
 import {
@@ -8,7 +16,7 @@ import {
   tokenSwap,
   CurrentConfig,
   TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER,MAX_FEE_PER_GAS, MAX_PRIORITY_FEE_PER_GAS
-} from '../config'
+} from './config'
 import { getPoolInfo } from './pool'
 import {
   getProvider,
@@ -25,7 +33,6 @@ export type TokenTrade = Trade<Token, Token, TradeType>
 export async function createTrade(): Promise<TokenTrade> {
   const poolInfo = await getPoolInfo()
 
-
   const pool = new Pool(
       tokenSwap.in,
       tokenSwap.out,
@@ -34,6 +41,10 @@ export async function createTrade(): Promise<TokenTrade> {
       poolInfo.liquidity.toString(),
       poolInfo.tick
   )
+
+  console.log("poolInfo1")
+  console.log(poolInfo)
+
 
   const swapRoute = new Route(
       [pool],
@@ -57,8 +68,7 @@ export async function createTrade(): Promise<TokenTrade> {
         JSBI.BigInt(amountOut)
     ),
     tradeType: TradeType.EXACT_INPUT,
-  });
-  console.log(uncheckedTrade.outputAmount.toExact());
+  })
 
   return uncheckedTrade
 }
@@ -72,6 +82,8 @@ export async function executeTrade(
   if (!walletAddress || !provider) {
     throw new Error('Cannot execute a trade without a connected wallet')
   }
+  
+
 
   // Give approval to the router to spend the token
   const tokenApproval = await getTokenTransferApproval(tokenSwap.in)
@@ -80,6 +92,8 @@ export async function executeTrade(
   if (tokenApproval !== TransactionState.Sent) {
     return TransactionState.Failed
   }
+  
+
 
   const options: SwapOptions = {
     slippageTolerance: new Percent(50, 10_000), // 50 bips, or 0.50%
@@ -126,6 +140,9 @@ async function getOutputQuote(route: Route<Currency, Currency>) {
         useQuoterV2: true,
       }
   )
+  //console.log("calldata3")
+ // alert(calldata)
+  //console.log("calldata2")
 
   const quoteCallReturnData = await provider.call({
     to: CurrentConfig.QUOTER_CONTRACT_ADDRESS,

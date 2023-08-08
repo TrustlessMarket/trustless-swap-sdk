@@ -4,32 +4,6 @@ import { ChainId, Token} from 'trustless-swap-sdk'
 
 // Addresses
 
-export const POOL_FACTORY_CONTRACT_ADDRESS =
-  '0x1F98431c8aD98523631AE4a59f267346ea31F984'
-export const QUOTER_CONTRACT_ADDRESS =
-  '0x61fFE014bA17989E743c5F6cB21bF9697530B21e'
-export const SWAP_ROUTER_ADDRESS = '0xE592427A0AEce92De3Edee1F18E0157C05861564'
-export const WETH_CONTRACT_ADDRESS =
-  '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-
-// Currencies and Tokens
-
-export const WETH_TOKEN = new Token(
-    ChainId.MAINNET,
-  '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-  18,
-  'WETH',
-  'Wrapped Ether'
-)
-
-export const USDC_TOKEN = new Token(
-  ChainId.MAINNET,
-  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
-  6,
-  'USDC',
-  'USD//C'
-)
-
 // ABI's
 
 export const ERC20_ABI = [
@@ -54,30 +28,3 @@ export const WETH_ABI = [
   'function withdraw(uint wad) public',
 ]
 
-// Transactions
-
-export const MAX_FEE_PER_GAS = 100000000000
-export const MAX_PRIORITY_FEE_PER_GAS = 100000000000
-export const TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER = 2000
-
-export enum FeeAmount {
-  LOWEST = 100,
-  LOW = 500,
-  MEDIUM = 3000,
-  HIGH = 10000
-}
-
-/**
- * The default factory tick spacings by fee amount.
- */
-export const TICK_SPACINGS: { [amount in FeeAmount]: number } = {
-  [FeeAmount.LOWEST]: 1,
-  [FeeAmount.LOW]: 10,
-  [FeeAmount.MEDIUM]: 60,
-  [FeeAmount.HIGH]: 200
-}
-
-export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
-export const POOL_INIT_CODE_HASH = '0x04759a882be3a45ff74719de5c82516d29af4b3480d076fc0c57b2fdab813bc7'
-
-export const FACTORY_ADDRESS = '0x1F98431c8aD98523631AE4a59f267346ea31F984'

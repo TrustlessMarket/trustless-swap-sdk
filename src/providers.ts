@@ -1,7 +1,7 @@
 import {BaseProvider} from '@ethersproject/providers'
 import {BigNumber, ethers, providers} from 'ethers'
 
-import {CurrentConfig, CurrentWallet, WalletType} from '../config'
+import {CurrentConfig, CurrentWallet, WalletType} from './config'
 
 // Single copies of provider and wallet
 const mainnetProvider = new ethers.providers.JsonRpcProvider(
@@ -45,6 +45,8 @@ export function getProvider(): providers.Provider | null {
 }
 
 export function getWalletAddress(): string | null {
+  console.log( CurrentWallet.type)
+  console.log( walletExtensionAddress)
   return CurrentWallet.type===  WalletType.EXTENSION
       ? walletExtensionAddress
       : wallet.address
@@ -114,6 +116,8 @@ async function sendTransactionViaExtension(
       return TransactionState.Failed
     }
   } catch (e) {
+    console.log("tuanhm 8")
+    console.log(e)
     return TransactionState.Rejected
   }
 }

@@ -56,7 +56,6 @@ function  gettoken(listToken :any[],address:string) {
     let position = -1
     for(let index = 0; index<listToken.length; index++) {
      if(listToken[index].address==address)
-
      {
          position = index
      }
@@ -175,14 +174,14 @@ const Example = () => {
         const res = await fetch(
             API_ROOT+`/api/swap/token/list/v1?from_token=`+selectedOption.value+`&is_test=&limit=500&network=nos&page=1`,
         ).then((res) => {
-            return res.json();
+            return res.json()
         });
         for(let index = 0; index<res.data.length; index++)
         {
             listToken.push(res.data[index])
             options2.push( { value: res.data[index].address, label: res.data[index].symbol })
         }
-        console.log(res);
+        console.log(res)
     };
 
     // Update wallet state given a block number
@@ -193,13 +192,11 @@ const Example = () => {
       return
     }
     console.log(address)
-
     setTokenInBalance(await getCurrencyBalance(provider, address, tokenSwap.in))
     setTokenOutBalance(await getCurrencyBalance(provider, address, tokenSwap.out))
   }, [])
 
   // Event Handlers
-
   const onConnectWallet = useCallback(async () => {
     if (await connectBrowserExtensionWallet()) {
       refreshBalances()
@@ -243,10 +240,6 @@ const Example = () => {
       setTxState(await executeTrade(trade))
     }
   }, [])
-
-
-
-
 
   return (
 
