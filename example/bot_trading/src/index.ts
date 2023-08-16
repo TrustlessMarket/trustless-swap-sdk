@@ -1,12 +1,16 @@
 import {CronJob} from 'cron';
-import {CurrentConfig, Environment, choiceConFig, setTOkenSwap, changeWallet, MIN_REQUIRE_AMOUNT_OUT1, MIN_REQUIRE_AMOUNT_OUT2,CRON_STRING} from './libs/config'
-import {
+import {Token} from 'trustless-swap-sdk'
+import { CurrentConfig, Environment,WalletType,setTOkenSwap,setTOkenIn,setTOkenOut,changeWallet,tokenSwap,CurrentWallet,
     connectBrowserExtensionWallet,
     getProvider,
     getWalletAddress,
     TransactionState,
-    refreshProvider,
-} from './libs/providers'
+    refreshProvider, createTrade, executeTrade, TokenTrade,setTokens,gettokenIndex,
+    displayTrade,getCurrencyBalance
+} from "trustless-swap-sdk"
+
+
+
 
 import {createTrade, executeTrade, TokenTrade} from './libs/trading'
 import {getCurrencyBalance} from './libs/wallet'

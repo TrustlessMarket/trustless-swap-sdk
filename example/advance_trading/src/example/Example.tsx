@@ -2,20 +2,17 @@ import './Example.css'
 
 import React, { useCallback, useEffect, useState } from 'react'
 import { useForm } from "react-hook-form";
-import { CurrentConfig, Environment,WalletType,choiceConFig,setTOkenSwap,setTOkenIn,setTOkenOut,changeWallet,tokenSwap,CurrentWallet } from '../config'
-import {
+import {Token} from 'trustless-swap-sdk'
+import { CurrentConfig, Environment,WalletType,setTOkenSwap,setTOkenIn,setTOkenOut,changeWallet,tokenSwap,CurrentWallet,
     connectBrowserExtensionWallet,
     getProvider,
     getWalletAddress,
     TransactionState,
-    refreshProvider,
-} from '../libs/providers'
-
-import { createTrade, executeTrade, TokenTrade } from '../libs/trading'
-import { displayTrade } from '../libs/utils'
-import { Token } from 'trustless-swap-sdk'
-import { getCurrencyBalance } from '../libs/wallet'
+    refreshProvider, createTrade, executeTrade, TokenTrade,setTokens,gettokenIndex,
+    displayTrade,getCurrencyBalance
+} from 'trustless-swap-sdk'
 import Select from 'react-select';
+
 
 let options:any[] = [
     /*
@@ -39,10 +36,10 @@ let select2= ""
 
  // choiceConFig(Environment.MAINNET)
  // refreshProvider()
-    changeWallet(WalletType.PRIVATEKEY,"0x3B6c50437765f996A609eA479766141BB7903761","")
+    changeWallet(WalletType.PRIVATEKEY,"0x3B6c50437765f996A609eA479766141BB7903761","c46e21b81b8b70e0fdcbd537a9dd52fccd86a116ea2e998b2163ba51cd3c9bc4")
     //changeWallet(WalletType.EXTENSION,"","")
     refreshProvider()
-  setTOkenSwap(CurrentConfig.tokens_list[0],1,CurrentConfig.tokens_list[2],3000)
+  setTOkenSwap(CurrentConfig.tokens_list[0],1,CurrentConfig.tokens_list[2],10000)
 }
 let API_ROOT = ''
 if (CurrentConfig.env == Environment.MAINNET)
@@ -52,17 +49,9 @@ if (CurrentConfig.env == Environment.MAINNET)
 {
     API_ROOT ="https://dev.fprotocol.io"
 }
-function  gettoken(listToken :any[],address:string) {
-    let position = -1
-    for(let index = 0; index<listToken.length; index++) {
-     if(listToken[index].address==address)
-     {
-         position = index
-     }
-    }
-    return position
-}
+
 const getList = async () => {
+
     try {
         const res = await fetch(
             API_ROOT+`/api/swap/token/list/v1?is_test=&limit=500&network=nos&page=1`,
@@ -76,8 +65,13 @@ const getList = async () => {
             options.push( { value: res.data[index].address, label: res.data[index].symbol })
         }
         console.log(res);
+        setTokens(listToken)
+        console.log(listToken);
+        console.log("223333 vo day");
+
         // setList(res || []);
     } catch (error) {
+        console.log("223333err"+error);
 
     } finally {
 
@@ -141,8 +135,8 @@ const Example = () => {
         const in_amount =parseFloat( getValues("amount").toString());
         // alert(in_amount);
 
-        const index1 = gettoken(listToken,select1)
-        const index2 = gettoken(listToken,select2)
+        const index1 = gettokenIndex(listToken,select1)
+        const index2 = gettokenIndex(listToken,select2)
 
         const token1 = new Token(
             1,
@@ -204,8 +198,8 @@ const Example = () => {
   }, [refreshBalances])
 
   const onCreateTrade = useCallback(async () => {
-     const index1 = gettoken(listToken,select1)
-      const index2 = gettoken(listToken,select2)
+     const index1 = gettokenIndex(listToken,select1)
+      const index2 = gettokenIndex(listToken,select2)
       if(index1<0||index2<0)
       {
           alert("Invalid token")
