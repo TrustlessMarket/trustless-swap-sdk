@@ -26,16 +26,17 @@
     "@ethersproject/abi": "^5.0.12",
     "@ethersproject/solidity": "^5.0.9",
     "big.js": "^5.2.2",
+    "decimal.js-light": "^2.5.0",
     "ethers": "^5.7.2",
     "jsbi": "^3.1.4",
     "tiny-invariant": "^1.1.0",
     "tiny-warning": "^1.0.3",
-    "toformat": "^2.0.0",
-    "decimal.js-light": "^2.5.0"
+    "toformat": "^2.0.0"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.25",
     "@types/big.js": "^4.0.5",
+    "@types/jest": "^24.0.25",
+    "@types/whatwg-fetch": "^0.0.33",
     "tsdx": "^0.14.1"
   },
   "engines": {

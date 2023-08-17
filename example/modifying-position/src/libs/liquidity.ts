@@ -4,22 +4,25 @@ import {
   MAX_FEE_PER_GAS,
   MAX_PRIORITY_FEE_PER_GAS,
   NONFUNGIBLE_POSITION_MANAGER_ABI,
+  NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
 } from './constants'
 import { TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER } from './constants'
 import { sendTransaction, TransactionState } from './providers'
-
-import { Pool } from './entities/pool'
-import { Position } from './entities/position'
-import { nearestUsableTick } from './utils/nearestUsableTick'
-import { Token } from './entities/token'
-import { Percent } from './entities/fractions/percent'
-import { CurrencyAmount } from './entities/fractions/currencyAmount'
-import { NonfungiblePositionManager,MintOptions,AddLiquidityOptions,RemoveLiquidityOptions,CollectOptions } from './nonfungiblePositionManager'
-import { CurrentConfig,tokenLiquidity } from './config'
-import { getPoolInfo } from './poolinfo'
+import {
+  Pool,
+  Position,
+  nearestUsableTick,
+  MintOptions,
+  NonfungiblePositionManager,
+  AddLiquidityOptions,
+  RemoveLiquidityOptions,
+  CollectOptions,
+} from 'trustless-swap-sdk'
+import { CurrentConfig } from '../config'
+import { getPoolInfo } from './pool'
 import { getProvider, getWalletAddress } from './providers'
+import { Percent, CurrencyAmount, Token } from 'trustless-swap-sdk'
 import { fromReadableAmount } from './conversion'
-import { TickMath } from './utils/tickMath'
 
 export interface PositionInfo {
   tickLower: number
@@ -42,17 +45,17 @@ export async function addLiquidity(
 
   const positionToIncreaseBy = await constructPosition(
     CurrencyAmount.fromRawAmount(
-      tokenLiquidity.token0,
+      CurrentConfig.tokens.token0,
       fromReadableAmount(
-        tokenLiquidity.token0Amount * tokenLiquidity.fractionToAdd,
-        tokenLiquidity.token0.decimals
+        CurrentConfig.tokens.token0Amount * CurrentConfig.tokens.fractionToAdd,
+        CurrentConfig.tokens.token0.decimals
       )
     ),
     CurrencyAmount.fromRawAmount(
-      tokenLiquidity.token1,
+      CurrentConfig.tokens.token1,
       fromReadableAmount(
-        tokenLiquidity.token1Amount * tokenLiquidity.fractionToAdd,
-        tokenLiquidity.token1.decimals
+        CurrentConfig.tokens.token1Amount * CurrentConfig.tokens.fractionToAdd,
+        CurrentConfig.tokens.token1.decimals
       )
     )
   )
@@ -72,7 +75,7 @@ export async function addLiquidity(
   // build transaction
   const transaction = {
     data: calldata,
-    to: CurrentConfig.NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+    to: NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
     value: value,
     from: address,
     maxFeePerGas: MAX_FEE_PER_GAS,
@@ -93,28 +96,28 @@ export async function removeLiquidity(
 
   const currentPosition = await constructPosition(
     CurrencyAmount.fromRawAmount(
-        tokenLiquidity.token0,
+      CurrentConfig.tokens.token0,
       fromReadableAmount(
-          tokenLiquidity.token0Amount,
-          tokenLiquidity.token0.decimals
+        CurrentConfig.tokens.token0Amount,
+        CurrentConfig.tokens.token0.decimals
       )
     ),
     CurrencyAmount.fromRawAmount(
-        tokenLiquidity.token1,
+      CurrentConfig.tokens.token1,
       fromReadableAmount(
-          tokenLiquidity.token1Amount,
-          tokenLiquidity.token1.decimals
+        CurrentConfig.tokens.token1Amount,
+        CurrentConfig.tokens.token1.decimals
       )
     )
   )
 
   const collectOptions: Omit<CollectOptions, 'tokenId'> = {
     expectedCurrencyOwed0: CurrencyAmount.fromRawAmount(
-      tokenLiquidity.token0,
+      CurrentConfig.tokens.token0,
       0
     ),
     expectedCurrencyOwed1: CurrencyAmount.fromRawAmount(
-      tokenLiquidity.token1,
+      CurrentConfig.tokens.token1,
       0
     ),
     recipient: address,
@@ -125,7 +128,7 @@ export async function removeLiquidity(
     slippageTolerance: new Percent(50, 10_000),
     tokenId: positionId,
     // percentage of liquidity to remove
-    liquidityPercentage: new Percent(tokenLiquidity.fractionToRemove),
+    liquidityPercentage: new Percent(CurrentConfig.tokens.fractionToRemove),
     collectOptions,
   }
   // get calldata for minting a position
@@ -137,7 +140,7 @@ export async function removeLiquidity(
   // build transaction
   const transaction = {
     data: calldata,
-    to: CurrentConfig.NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+    to: NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
     value: value,
     from: address,
     maxFeePerGas: MAX_FEE_PER_GAS,
@@ -156,7 +159,7 @@ export async function getPositionIds(): Promise<number[]> {
   }
 
   const positionContract = new ethers.Contract(
-      CurrentConfig.NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+    NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
     NONFUNGIBLE_POSITION_MANAGER_ABI,
     provider
   )
@@ -182,12 +185,14 @@ export async function getPositionInfo(tokenId: number): Promise<PositionInfo> {
   }
 
   const positionContract = new ethers.Contract(
-      CurrentConfig.NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+    NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
     NONFUNGIBLE_POSITION_MANAGER_ABI,
     provider
   )
 
   const position = await positionContract.positions(tokenId)
+  console.log("position",position)
+ // console.log("tokensOwed1",position.tokensOwed1)
 
   return {
     tickLower: position.tickLower,
@@ -200,7 +205,7 @@ export async function getPositionInfo(tokenId: number): Promise<PositionInfo> {
   }
 }
 
-export async function getTokenTransferApprovalPosition(
+export async function getTokenTransferApproval(
   token: Token
 ): Promise<TransactionState> {
   const provider = getProvider()
@@ -218,7 +223,7 @@ export async function getTokenTransferApprovalPosition(
     )
 
     const transaction = await tokenContract.populateTransaction.approve(
-        CurrentConfig.NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+      NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
       TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER
     )
 
@@ -250,26 +255,14 @@ export async function constructPosition(
   )
 
   // create position using the maximum liquidity from input amounts
-  let tickLower =
-      nearestUsableTick(poolInfo.tick, poolInfo.tickSpacing) -
-      poolInfo.tickSpacing * 2
-  let tickUpper =
-      nearestUsableTick(poolInfo.tick, poolInfo.tickSpacing) +
-      poolInfo.tickSpacing * 2
-  if (tickLower<TickMath.MIN_TICK)
-  {
-    tickLower = TickMath.MIN_TICK
-  }
-  if (tickUpper>TickMath.MAX_TICK)
-  {
-    tickUpper = TickMath.MAX_TICK
-  }
   return Position.fromAmounts({
     pool: configuredPool,
     tickLower:
-    tickLower,
+      nearestUsableTick(poolInfo.tick, poolInfo.tickSpacing) -
+      poolInfo.tickSpacing * 2,
     tickUpper:
-    tickUpper,
+      nearestUsableTick(poolInfo.tick, poolInfo.tickSpacing) +
+      poolInfo.tickSpacing * 2,
     amount0: token0Amount.quotient,
     amount1: token1Amount.quotient,
     useFullPrecision: true,
@@ -283,11 +276,11 @@ export async function mintPosition(): Promise<TransactionState> {
     return TransactionState.Failed
   }
   // Give approval to the contract to transfer tokens
-  const tokenInApproval = await getTokenTransferApprovalPosition(
-    tokenLiquidity.token0
+  const tokenInApproval = await getTokenTransferApproval(
+    CurrentConfig.tokens.token0
   )
-  const tokenOutApproval = await getTokenTransferApprovalPosition(
-    tokenLiquidity.token1
+  const tokenOutApproval = await getTokenTransferApproval(
+    CurrentConfig.tokens.token1
   )
 
   if (
@@ -299,17 +292,17 @@ export async function mintPosition(): Promise<TransactionState> {
 
   const positionToMint = await constructPosition(
     CurrencyAmount.fromRawAmount(
-      tokenLiquidity.token0,
+      CurrentConfig.tokens.token0,
       fromReadableAmount(
-        tokenLiquidity.token0Amount,
-        tokenLiquidity.token0.decimals
+        CurrentConfig.tokens.token0Amount,
+        CurrentConfig.tokens.token0.decimals
       )
     ),
     CurrencyAmount.fromRawAmount(
-      tokenLiquidity.token1,
+      CurrentConfig.tokens.token1,
       fromReadableAmount(
-        tokenLiquidity.token1Amount,
-        tokenLiquidity.token1.decimals
+        CurrentConfig.tokens.token1Amount,
+        CurrentConfig.tokens.token1.decimals
       )
     )
   )
@@ -329,7 +322,7 @@ export async function mintPosition(): Promise<TransactionState> {
   // build transaction
   const transaction = {
     data: calldata,
-    to:  CurrentConfig.NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+    to: NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
     value: value,
     from: address,
     maxFeePerGas: MAX_FEE_PER_GAS,

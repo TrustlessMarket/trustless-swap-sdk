@@ -72,7 +72,7 @@ export async function getListRoute(from:string,to:string): Promise<any[]>{
   try {
     const res = await fetch(
         API_ROOT+`/api/swap/token/route/v2?network=nos&from_token=`+from+'&to_token='+to,
-    ).then((res) => {
+    ).then((res:any) => {
       return res.json();
     });
     for(let index = 0; index<res.data.length; index++)

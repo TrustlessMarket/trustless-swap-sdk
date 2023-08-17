@@ -1,15 +1,7 @@
-import { WalletType,setTOkenSwap,setTOkenIn,setTOkenOut,changeWallet,tokenSwap,CurrentWallet,
-    connectBrowserExtensionWallet,
-    getProvider,
-    getWalletAddress,
-    TransactionState,
-    refreshProvider, createTrade, executeTrade, TokenTrade,setTokens,gettokenIndex,
-    displayTrade,getCurrencyBalance
-} from 'trustless-swap-sdk'
-
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import './Example.css'
-import { Environment, CurrentConfig,tokenLiquidity } from 'trustless-swap-sdk'
+import { Environment, CurrentConfig } from '../config'
+import { getCurrencyBalance } from '../libs/wallet'
 import {
   getPositionIds,
   mintPosition,
@@ -17,17 +9,13 @@ import {
   removeLiquidity,
   getPositionInfo,
   PositionInfo,
-} from 'trustless-swap-sdk'
-
-{
-
-    // choiceConFig(Environment.MAINNET)
-    // refreshProvider()
-   // changeWallet(WalletType.PRIVATEKEY,"0x3B6c50437765f996A609eA479766141BB7903761","c46e21b81b8b70e0fdcbd537a9dd52fccd86a116ea2e998b2163ba51cd3c9bc4")
-    changeWallet(WalletType.EXTENSION,"","")
-    refreshProvider()
-   // setTOkenSwap(CurrentConfig.tokens_list[0],1,CurrentConfig.tokens_list[2],10000)
-}
+} from '../libs/liquidity'
+import {
+  connectBrowserExtensionWallet,
+  getProvider,
+  TransactionState,
+  getWalletAddress,
+} from '../libs/providers'
 
 const useOnBlockUpdated = (callback: (blockNumber: number) => void) => {
   useEffect(() => {
@@ -62,10 +50,10 @@ const Example = () => {
 
     // Set Balances
     setToken0Balance(
-      await getCurrencyBalance(provider, address, tokenLiquidity.token0)
+      await getCurrencyBalance(provider, address, CurrentConfig.tokens.token0)
     )
     setToken1Balance(
-      await getCurrencyBalance(provider, address, tokenLiquidity.token1)
+      await getCurrencyBalance(provider, address, CurrentConfig.tokens.token1)
     )
 
     // Set Position Info
@@ -109,30 +97,30 @@ const Example = () => {
       .map((info) => {
         const id = info[0]
         const posInfo = info[1] as PositionInfo
-        return `${id}: ${posInfo.liquidity.toString()} liquidity, owed ${posInfo.tokensOwed0.toString()} and ${posInfo.tokensOwed1.toString()}`
+        return `${id}: ${posInfo.liquidity.toString()} liquidity, owed ${posInfo.tokensOwed0.toNumber()} and ${posInfo.tokensOwed1.toNumber()}`
       })
   }, [positionIds, positionsInfo])
 
   return (
     <div className="App">
-      {CurrentConfig.rpc === '' && (
+      {CurrentConfig.rpc.mainnet === '' && (
         <h2 className="error">Please set your mainnet RPC URL in config.ts</h2>
       )}
-      {CurrentWallet.type  === WalletType.EXTENSION &&
+      {CurrentConfig.env === Environment.WALLET_EXTENSION &&
         getProvider() === null && (
           <h2 className="error">
             Please install a wallet to use this example configuration
           </h2>
         )}
       <h3>{`Wallet Address: ${getWalletAddress()}`}</h3>
-      {CurrentWallet.type  === WalletType.EXTENSION &&
+      {CurrentConfig.env === Environment.WALLET_EXTENSION &&
         !getWalletAddress() && (
           <button onClick={onConnectWallet}>Connect Wallet</button>
         )}
       <h3>{`Block Number: ${blockNumber + 1}`}</h3>
       <h3>{`Transaction State: ${txState}`}</h3>
-      <h3>{`${tokenLiquidity.token0.symbol} Balance: ${token0Balance}`}</h3>
-      <h3>{`${tokenLiquidity.token1.symbol} Balance: ${token1Balance}`}</h3>
+      <h3>{`${CurrentConfig.tokens.token0.symbol} Balance: ${token0Balance}`}</h3>
+      <h3>{`${CurrentConfig.tokens.token1.symbol} Balance: ${token1Balance}`}</h3>
       <div>
         Positions:{' '}
         {positionInfoStrings.map((s, i) => (
@@ -145,7 +133,7 @@ const Example = () => {
         disabled={
           txState === TransactionState.Sending ||
           getProvider() === null ||
-          CurrentConfig.rpc === ''
+          CurrentConfig.rpc.mainnet === ''
         }>
         <p>Mint Position</p>
       </button>
@@ -157,7 +145,7 @@ const Example = () => {
         disabled={
           txState === TransactionState.Sending ||
           getProvider() === null ||
-          CurrentConfig.rpc === '' ||
+          CurrentConfig.rpc.mainnet === '' ||
           positionIds.length === 0
         }>
         <p>Add Liquidity to Position</p>
@@ -170,7 +158,7 @@ const Example = () => {
         disabled={
           txState === TransactionState.Sending ||
           getProvider() === null ||
-          CurrentConfig.rpc === '' ||
+          CurrentConfig.rpc.mainnet === '' ||
           positionIds.length === 0
         }>
         <p>Remove Liquidity from Position</p>

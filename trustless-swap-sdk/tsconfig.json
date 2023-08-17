@@ -4,6 +4,10 @@
   ],
   "compilerOptions": {
     "target": "es2018",
+    "lib": [
+      "esnext",
+      "DOM"
+    ],
     "module": "esnext",
     "importHelpers": true,
     "declaration": true,
