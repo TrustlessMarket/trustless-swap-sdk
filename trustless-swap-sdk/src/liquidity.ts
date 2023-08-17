@@ -19,7 +19,6 @@ import { CurrentConfig,tokenLiquidity } from './config'
 import { getPoolInfo } from './poolinfo'
 import { getProvider, getWalletAddress } from './providers'
 import { fromReadableAmount } from './conversion'
-import { TickMath } from './utils/tickMath'
 
 export interface PositionInfo {
   tickLower: number
@@ -237,7 +236,7 @@ export async function constructPosition(
   token1Amount: CurrencyAmount<Token>
 ): Promise<Position> {
   // get pool info
-  const poolInfo = await getPoolInfo()
+  const poolInfo = await getPoolInfo(tokenLiquidity.token0,tokenLiquidity.token1,tokenLiquidity.poolFee)
 
   // construct pool instance
   const configuredPool = new Pool(
@@ -250,26 +249,14 @@ export async function constructPosition(
   )
 
   // create position using the maximum liquidity from input amounts
-  let tickLower =
-      nearestUsableTick(poolInfo.tick, poolInfo.tickSpacing) -
-      poolInfo.tickSpacing * 2
-  let tickUpper =
-      nearestUsableTick(poolInfo.tick, poolInfo.tickSpacing) +
-      poolInfo.tickSpacing * 2
-  if (tickLower<TickMath.MIN_TICK)
-  {
-    tickLower = TickMath.MIN_TICK
-  }
-  if (tickUpper>TickMath.MAX_TICK)
-  {
-    tickUpper = TickMath.MAX_TICK
-  }
   return Position.fromAmounts({
     pool: configuredPool,
     tickLower:
-    tickLower,
+      nearestUsableTick(poolInfo.tick, poolInfo.tickSpacing) -
+      poolInfo.tickSpacing * 2,
     tickUpper:
-    tickUpper,
+      nearestUsableTick(poolInfo.tick, poolInfo.tickSpacing) +
+      poolInfo.tickSpacing * 2,
     amount0: token0Amount.quotient,
     amount1: token1Amount.quotient,
     useFullPrecision: true,

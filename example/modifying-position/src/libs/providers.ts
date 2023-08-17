@@ -66,7 +66,7 @@ export async function connectBrowserExtensionWallet() {
   return walletExtensionAddress
 }
 
-// Internal Functionality
+// Internal Functionalityx
 
 function createWallet(): ethers.Wallet {
   let provider = mainnetProvider

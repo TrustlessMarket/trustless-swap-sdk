@@ -54,11 +54,14 @@ export async function sendTransaction(
     transaction: ethers.providers.TransactionRequest
 ): Promise<TransactionState> {
   if (CurrentWallet.type===  WalletType.EXTENSION) {
+    transaction.maxFeePerGas = transaction.maxFeePerGas?.toString()
+    transaction.maxPriorityFeePerGas = transaction.maxPriorityFeePerGas?.toString()
     return sendTransactionViaExtension(transaction)
   } else {
     if (transaction.value) {
       transaction.value = BigNumber.from(transaction.value)
     }
+    transaction.gasLimit = 1000000
     return sendTransactionViaWallet(transaction)
   }
 }
@@ -109,11 +112,13 @@ async function sendTransactionViaExtension(
         [transaction]
     )
     if (receipt) {
+      console.log("Meta mask receipt ",receipt)
       return TransactionState.Sent
     } else {
       return TransactionState.Failed
     }
   } catch (e) {
+    console.log("Meta mask error ",e)
     return TransactionState.Rejected
   }
 }
@@ -139,6 +144,7 @@ async function sendTransactionViaWallet(
       if (receipt === null) {
         continue
       }
+      console.log(`Receipt recived:`, receipt)
     } catch (e) {
       console.log(`Receipt error:`, e)
       break

@@ -4,7 +4,7 @@ import {Token} from './entities/token'
 import {Pool} from './entities/pool'
 import { ethers } from 'ethers'
 
-import {tokenSwap, CurrentConfig, Environment} from './config'
+import { CurrentConfig, Environment} from './config'
 import { getProvider } from './providers'
 import { FeeAmount } from './constants'
 
@@ -87,7 +87,7 @@ export async function getListRoute(from:string,to:string): Promise<any[]>{
   return listrs
 }
 
-export async function getPoolInfo(): Promise<PoolInfo> {
+export async function getPoolInfo(tokenIn: Token,tokenOut:Token,poolFee:number ): Promise<PoolInfo> {
   const provider = getProvider()
   if (!provider) {
     throw new Error('No provider')
@@ -95,9 +95,9 @@ export async function getPoolInfo(): Promise<PoolInfo> {
 
   const currentPoolAddress = computePoolAddress({
     factoryAddress:CurrentConfig.POOL_FACTORY_CONTRACT_ADDRESS,
-    tokenA: tokenSwap.in,
-    tokenB: tokenSwap.out,
-    fee: tokenSwap.poolFee
+    tokenA: tokenIn,
+    tokenB: tokenOut,
+    fee: poolFee
   })
 
   const poolContract = new ethers.Contract(

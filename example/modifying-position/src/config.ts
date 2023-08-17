@@ -33,7 +33,7 @@ export interface ExampleConfig {
 // Example Configuration
 
 export const CurrentConfig: ExampleConfig = {
-  env: Environment.WALLET_EXTENSION,
+  env: Environment.MAINNET,
   rpc: {
     local: 'https://l2-node.regtest.trustless.computer',
     mainnet: 'https://l2-node.regtest.trustless.computer',

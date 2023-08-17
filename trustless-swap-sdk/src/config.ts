@@ -98,9 +98,9 @@ export let tokenSwap ={
 
 export let tokenLiquidity =  {
     token0: CurrentConfig.tokens_list[0],
-        token0Amount: 3,
+        token0Amount: 0.5,
         token1: CurrentConfig.tokens_list[2],
-        token1Amount: 5,
+        token1Amount: 0.2,
         poolFee: FeeAmount.LOW,
         fractionToRemove: 1,
         fractionToAdd: 0.5,
