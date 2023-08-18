@@ -13,7 +13,7 @@
   ],
   "repository": "https://github.com/TrustlessMarket/trustless-swap-sdk",
   "keywords": [
-    "ethereum"
+    "ethereum, newbitcoincity, swap"
   ],
   "module": "dist/strustless-swap-sdk.esm.js",
   "scripts": {
