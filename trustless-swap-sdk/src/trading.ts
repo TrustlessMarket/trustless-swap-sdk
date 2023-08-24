@@ -7,10 +7,12 @@ import { Trade } from './entities/trade'
 import { CurrencyAmount } from './entities/fractions/currencyAmount'
 import { Route } from './entities/route'
 import JSBI from 'jsbi'
-import  {getPoolInfoByToken, getListRoute, encodePath} from './poolinfo'
-
+import  {getPoolInfoByToken, encodePath} from './poolinfo'
+//import queryString from 'query-string';
+import {isEmpty} from 'lodash';
+import camelCase from 'lodash/camelCase'
 import {
-  CurrentConfig,tokenSwap,
+  CurrentConfig, Environment, tokenSwap,
 } from './config'
 
 import {
@@ -21,36 +23,148 @@ import {
 import {
   getProvider,
   getWalletAddress,
-  sendTransaction,
+  sendTransaction, sendTransactionViaExtensionGetReceipt,
   TransactionState,
 } from './providers'
 import { fromReadableAmount } from './utils1'
 import QuoterV2ABI from "./QuoterV2.json";
+import axios from 'axios';
+
+export interface IToken {
+  btcPrice?: number | string;
+  ownerSupply?: string | number;
+  toBalance?: string | number;
+  fromBalance?: string | number;
+  id: string;
+  deletedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  address: string;
+  totalSupply?: any;
+  owner?: string;
+  deployedAtBlock?: number;
+  slug?: string;
+  symbol: string;
+  name: string;
+  price?: number | string;
+  usdPrice?: number;
+  usdVolume?: number;
+  usdTotalVolume?: number;
+  usdMarketCap?: number;
+  percent?: any;
+  percent7Day?: any;
+  volume?: number;
+  thumbnail?: string;
+  description?: string;
+  fromAddress?: string;
+  toAddress?: string;
+  index?: number;
+  balance?: string;
+  decimal?: number | string;
+  network?: string;
+  baseTokenSymbol?: string;
+  status?: string;
+  verifyCode?: string;
+  chart?: [];
+}
+
+export interface IPagingParams {
+  limit?: number;
+  page?: number;
+  is_test?: string;
+  network?: string;
+}
+export interface IListTokenParams {
+  is_test?: string;
+  from_token?: string;
+  network?: string
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const camelCaseKeys = (obj: any): any => {
+  if (Boolean(obj) && !isEmpty(obj) && Array.isArray(obj)) {
+    return obj.map((v) => camelCaseKeys(v));
+  }
+  if (Boolean(obj) && obj !== null && obj.constructor === Object) {
+    return Object.keys(obj).reduce(
+        (result, key) => ({
+          ...result,
+          [camelCase(key)]: camelCaseKeys(obj[key]),
+        }),
+        {},
+    );
+  }
+  return obj;
+};
 
 
-/*
-import { ethers } from 'ethers'
-import { TradeType,Token,Currency,CurrencyAmount,Pool,Route,Trade,SwapQuoter,SwapOptions,SwapRouter,Percent } from 'trustless-swap-sdk'
+export const swrFetcher = async (url: string, options: any) => {
+  const { method, data, ...rest } = options;
 
-import JSBI from 'jsbi'
+  try {
+    const response = await axios.request({ url, method, data, ...rest });
 
-import {
-  ERC20_ABI,
-  tokenSwap,
-  CurrentConfig,
-  TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER,MAX_FEE_PER_GAS, MAX_PRIORITY_FEE_PER_GAS
-} from '../config'
-import {getPoolInfo, getPoolInfoByToken, getListRoute, encodePath} from './pool'
-import {
-  getProvider,
-  getWalletAddress,
-  sendTransaction,
-  TransactionState,
-} from './providers'
-import { fromReadableAmount } from './utils'
-import QuoterV2ABI from "./QuoterV2.json";
-import IV3PoolABI from "./IV3Pool.json";
-*/
+    return camelCaseKeys(response?.data?.data || response?.data?.result);
+  } catch (error) {
+    throw new Error( 'Something went wrong');
+  }
+};
+
+let API_ROOT = ''
+if (CurrentConfig.env == Environment.MAINNET)
+{
+  API_ROOT ="https://www.fprotocol.io"
+}else  if (CurrentConfig.env == Environment.TESTNET)
+{
+  API_ROOT ="https://dev.fprotocol.io"
+}
+
+export async function getListRoute(from:string,to:string): Promise<any[]>{
+  let listrs =[]
+  try {
+    const res = await fetch(
+        API_ROOT+`/api/swap/token/route/v2?network=nos&from_token=`+from+'&to_token='+to,
+    ).then((res:any) => {
+      return res.json();
+    });
+    for(let index = 0; index<res.data.length; index++)
+    {
+      listrs.push(res.data[index])
+    }
+  } catch (error) {
+
+  } finally {
+
+  }
+  return listrs
+}
+
+export const getSwapTokensV1 = async (
+    params: any,
+): Promise<IToken[]> => {
+  const qs = '?' + new URLSearchParams(params).toString();
+
+  return swrFetcher(`${API_ROOT}/api/swap/token/list/v1${qs}`, {
+    method: 'GET',
+    error: 'Fail to get tokens data',
+  });
+};
+
+export interface ISwapRouteParams {
+  from_token: string;
+  to_token: string;
+  network?: string
+}
+
+export const getSwapRoutesV2 = async (params: any) => {
+  const qs = '?' + new URLSearchParams(params).toString();
+  return swrFetcher(`${API_ROOT}/api/swap/token/route/v2${qs}`, {
+    method: 'GET',
+    error: 'Fail to get route',
+  });
+};
+
+
 let listToken:any[] = [
 ]
 
@@ -70,24 +184,95 @@ export type TokenTrade = Trade<Token, Token, TradeType>
 
 // Trading Functions
 
-export async function createTrade(): Promise<TokenTrade> {
-  /*
-  const poolInfo = await getPoolInfo()
-
-
-  const pool = new Pool(
-      tokenSwap.in,
-      tokenSwap.out,
-      tokenSwap.poolFee,
-      poolInfo.sqrtPriceX96.toString(),
-      poolInfo.liquidity.toString(),
-      poolInfo.tick
+export const getBestRoute= async function(amount: any, swapRoutes: any, listToken1: IToken[]): Promise<any[]> {
+  const provider = getProvider()
+  if (!provider) {
+    throw new Error('No provider')
+  }
+  const quoteContract = new ethers.Contract(
+      CurrentConfig.QUOTER_CONTRACT_ADDRESS,
+      QuoterV2ABI.abi,
+      provider
   )
-  */
+  let  listPools:any[] =[]
 
-  //const poolInfo = await getPoolInfo()
+  const promises = swapRoutes.map(async (route: any) => {
+    const addresses = route?.pathTokens?.map((token: IToken) => token.address);
+    const fees = route?.pathPairs?.map((pair: any) => Number(pair.fee));
+    const transaction = await quoteContract
+        .connect(provider)
+        .callStatic
+        .quoteExactInput(
+            encodePath(addresses, fees),
+            ethers.utils.parseEther(amount.toString())
+        );
+
+    return Number(transaction.amountOut.toString());
+  });
+
+  console.log("vao day")
+
+  const res:number[] = await Promise.all(promises);
+  const result = Math.max(...res);
+  const indexBestRoute = res.indexOf(result);
+  const bestRoute = swapRoutes[indexBestRoute];
+  console.log("bestRoute",bestRoute)
+
+  for (var pair of bestRoute.pathPairs) {
+    console.log("vao day 4")
+    console.log("pair.token0",pair.token0)
+
+    const index0 = gettokenIndex(listToken1,pair.token0)
+    console.log("index0",index0)
+    const token0 = new Token(
+        1,
+        listToken1[index0].address,
+       Number(listToken1[index0].decimal),
+        listToken1[index0].symbol,
+        listToken1[index0].symbol)
+    const index1 = gettokenIndex(listToken1,pair.token1)
+    console.log("index1",index1)
+    const token1 = new Token(
+        1,
+        listToken1[index1].address,
+        Number(listToken1[index1].decimal),
+        listToken1[index1].symbol,
+        listToken1[index1].symbol)
+    const p =await  getPoolInfoByToken( token0, token1,parseInt(pair.fee))
+    listPools.push(p)
+  }
+
+  console.log("vao day 1")
+  const swapRout1 = new Route(
+      listPools,
+      tokenSwap.in,
+      tokenSwap.out
+  )
 
 
+  const uncheckedTrade = Trade.createUncheckedTrade({
+    route: swapRout1,
+    inputAmount: CurrencyAmount.fromRawAmount(
+        tokenSwap.in,
+        fromReadableAmount(
+            tokenSwap.amountIn,
+            tokenSwap.in.decimals
+        ).toString()
+    ),
+    outputAmount: CurrencyAmount.fromRawAmount(
+        tokenSwap.out,
+        JSBI.BigInt(result)
+    ),
+    tradeType: TradeType.EXACT_INPUT,
+  })
+
+  console.log("vao day 2")
+
+  return [result,bestRoute,uncheckedTrade]
+
+}
+
+export async function createTrade(): Promise<TokenTrade> {
   const provider = getProvider()
   if (!provider) {
     throw new Error('No provider')
@@ -165,6 +350,36 @@ export async function createTrade(): Promise<TokenTrade> {
   return uncheckedTrade
 }
 
+export async function executeTradeSlippage(
+    trade: TokenTrade,
+    slippage: number
+): Promise<any> {
+
+  const walletAddress = getWalletAddress()
+  if (!walletAddress ) {
+    throw new Error('Cannot execute a trade without a connected wallet')
+  }
+  const options: SwapOptions = {
+    slippageTolerance: new Percent(slippage, 10_000), // 50 bips, or 0.50%
+    deadline: Math.floor(Date.now() / 1000) + 60 * 20, // 20 minutes from the current Unix time
+    recipient: walletAddress,
+  }
+
+  const methodParameters = SwapRouter.swapCallParameters([trade], options)
+  const tx = {
+    data: methodParameters.calldata,
+    to: CurrentConfig.SWAP_ROUTER_ADDRESS,
+    value: methodParameters.value,
+    from: walletAddress,
+    maxFeePerGas: MAX_FEE_PER_GAS.toString(),
+    maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS.toString(),
+  }
+
+  const res = await sendTransactionViaExtensionGetReceipt(tx)
+
+  return res
+
+}
 
 export async function executeTrade(
     trade: TokenTrade

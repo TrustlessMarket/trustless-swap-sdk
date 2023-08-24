@@ -4,7 +4,7 @@ import {Token} from './entities/token'
 import {Pool} from './entities/pool'
 import { ethers } from 'ethers'
 
-import { CurrentConfig, Environment} from './config'
+import { CurrentConfig} from './config'
 import { getProvider } from './providers'
 import { FeeAmount } from './constants'
 
@@ -58,34 +58,7 @@ export async function getPoolInfoByToken(tokenIn: Token,tokenOut:Token,poolFee:n
   return p
 }
 
-let API_ROOT = ''
-if (CurrentConfig.env == Environment.MAINNET)
-{
-  API_ROOT ="https://www.fprotocol.io"
-}else  if (CurrentConfig.env == Environment.TESTNET)
-{
-  API_ROOT ="https://dev.fprotocol.io"
-}
 
-export async function getListRoute(from:string,to:string): Promise<any[]>{
-  let listrs =[]
-  try {
-    const res = await fetch(
-        API_ROOT+`/api/swap/token/route/v2?network=nos&from_token=`+from+'&to_token='+to,
-    ).then((res:any) => {
-      return res.json();
-    });
-    for(let index = 0; index<res.data.length; index++)
-    {
-      listrs.push(res.data[index])
-    }
-  } catch (error) {
-
-  } finally {
-
-  }
-  return listrs
-}
 
 export async function getPoolInfo(tokenIn: Token,tokenOut:Token,poolFee:number ): Promise<PoolInfo> {
   const provider = getProvider()
@@ -146,4 +119,6 @@ export function encodePath(path: string[], fees: FeeAmount[]): string {
 
   return encoded.toLowerCase()
 }
+
+
 

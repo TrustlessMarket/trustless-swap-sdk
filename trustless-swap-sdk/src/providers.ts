@@ -123,6 +123,27 @@ async function sendTransactionViaExtension(
   }
 }
 
+// Transacting with a wallet extension via a Web3 Provider
+export async function sendTransactionViaExtensionGetReceipt(
+    transaction: ethers.providers.TransactionRequest
+): Promise<any> {
+  try {
+    const receipt = await browserExtensionProvider?.send(
+        'eth_sendTransaction',
+        [transaction]
+    )
+    if (receipt) {
+      console.log("Meta mask receipt ",receipt)
+      return [TransactionState.Sent,receipt]
+    } else {
+      return [TransactionState.Failed,null]
+    }
+  } catch (e) {
+    console.log("Meta mask error ",e)
+    return [TransactionState.Rejected,null]
+  }
+}
+
 async function sendTransactionViaWallet(
     transaction: ethers.providers.TransactionRequest
 ): Promise<TransactionState> {
