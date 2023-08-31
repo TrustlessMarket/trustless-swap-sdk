@@ -37,14 +37,14 @@ export abstract class Payments {
       const feeBips = this.encodeFeeBips(feeOptions.fee)
       const feeRecipient: string = validateAndParseAddress(feeOptions.recipient)
 
-      return Payments.INTERFACE.encodeFunctionData('unwrapWETH9WithFee', [
+      return Payments.INTERFACE.encodeFunctionData('unwrapWTCWithFee', [
         toHex(amountMinimum),
         recipient,
         feeBips,
         feeRecipient
       ])
     } else {
-      return Payments.INTERFACE.encodeFunctionData('unwrapWETH9', [toHex(amountMinimum), recipient])
+      return Payments.INTERFACE.encodeFunctionData('unwrapWTC', [toHex(amountMinimum), recipient])
     }
   }
 
@@ -73,6 +73,6 @@ export abstract class Payments {
   }
 
   public static encodeRefundETH(): string {
-    return Payments.INTERFACE.encodeFunctionData('refundETH')
+    return Payments.INTERFACE.encodeFunctionData('refundTC')
   }
 }

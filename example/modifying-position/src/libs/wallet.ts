@@ -27,3 +27,6 @@ export async function getCurrencyBalance(
   // Format with proper units (approximate)
   return toReadableAmount(balance, decimals).toString()
 }
+
+
+

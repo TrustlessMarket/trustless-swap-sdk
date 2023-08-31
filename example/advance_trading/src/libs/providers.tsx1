@@ -77,8 +77,6 @@ export async function connectBrowserExtensionWallet() {
   }
   
   walletExtensionAddress = accounts[0]
-  console.log("accounts")
-  console.log(walletExtensionAddress)
   return walletExtensionAddress
 }
 

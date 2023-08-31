@@ -3,8 +3,6 @@ import {Trade } from './entities/trade'
 import {  TradeType } from './constants'
 import { BigNumber, ethers } from 'ethers'
 
-const MAX_DECIMALS = 4
-
 export function fromReadableAmount(
     amount: number,
     decimals: number
@@ -13,7 +11,7 @@ export function fromReadableAmount(
 }
 
 export function toReadableAmount(rawAmount: number, decimals: number): string {
-  return ethers.utils.formatUnits(rawAmount, decimals).slice(0, MAX_DECIMALS)
+  return ethers.utils.formatUnits(rawAmount, decimals)
 }
 
 export function displayTrade(trade: Trade<Token, Token, TradeType>): string {

@@ -14,11 +14,13 @@ export enum WalletType {
 export interface EnvironmentConfig {
     env: Environment
     rpc:string
+    API_ROOT: string,
     POOL_FACTORY_CONTRACT_ADDRESS:string
     QUOTER_CONTRACT_ADDRESS:string
     SWAP_ROUTER_ADDRESS:string
     WETH_CONTRACT_ADDRESS:string
     NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS:string
+    TC_CONTRACT_ADDRESS:string
     tokens_list: Array<Token>
 }
 
@@ -26,11 +28,13 @@ export interface EnvironmentConfig {
 
 export const testnetConfig: EnvironmentConfig = {
     env: Environment.TESTNET,
+    API_ROOT:"https://dev.fprotocol.io",
     rpc:'https://l2-node.regtest.trustless.computer',
     POOL_FACTORY_CONTRACT_ADDRESS:'0x9D921bF7460d1FcfF77d88edd4D34cD1e2F56BDc',
     QUOTER_CONTRACT_ADDRESS:'0xD228465a3E1C64Ed6C627a87132dc6b1552cd0F2',
     SWAP_ROUTER_ADDRESS:'0x3a3885F7a03beC1F4A1c00f155A5d57168fDE205',
     WETH_CONTRACT_ADDRESS:'0x0fba66555b74f13809862bd6f15fffa0a0237059',
+    TC_CONTRACT_ADDRESS:'0x8b485d217096cE20A09AF11D15ccCc63323C1469',
     NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS:'0xe6Dc33d13200f0A9CF7cFC7B484aE1891D934234',
     tokens_list:[
         new Token(
@@ -58,11 +62,13 @@ export const testnetConfig: EnvironmentConfig = {
 export const mainnetConfig: EnvironmentConfig = {
     env: Environment.MAINNET,
     rpc:'https://node.l2.trustless.computer',
+    API_ROOT:"https://www.fprotocol.io",
     POOL_FACTORY_CONTRACT_ADDRESS:'0x1d12AC81710da54A50e2e9095E20dB2D915Ce3C8',
     QUOTER_CONTRACT_ADDRESS:'0x17f8275c3842f977d42Ab09c35042ddE4ec55856',
     SWAP_ROUTER_ADDRESS:'0xB3eAc9358462356B231801309f553c48667B2CB7',
     WETH_CONTRACT_ADDRESS:'0x43bda480de297a14cec95bfb1c6a313615f809ef',
     NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS:'0xe6Dc33d13200f0A9CF7cFC7B484aE1891D934234',
+    TC_CONTRACT_ADDRESS:'0xad771ed0f8c5df06d21a7eda3b00acd6688dd532',
     tokens_list:[
         new Token(
             1,

@@ -12,7 +12,7 @@
         },
         {
           "internalType": "address",
-          "name": "_WETH9",
+          "name": "_WTC",
           "type": "address"
         }
       ],
@@ -21,7 +21,7 @@
     },
     {
       "inputs": [],
-      "name": "WETH9",
+      "name": "WTC",
       "outputs": [
         {
           "internalType": "address",

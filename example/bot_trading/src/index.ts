@@ -44,7 +44,6 @@ class Foo {
     }*/
 
     cronTrade = async (): Promise<void> => {
-        console.log((new Date()).toString())
         const trade1 = await createTrade(true)
         if(parseFloat(trade1.outputAmount.toExact())>MIN_REQUIRE_AMOUNT_OUT1)
         {

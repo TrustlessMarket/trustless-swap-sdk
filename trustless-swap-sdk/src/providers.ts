@@ -61,10 +61,28 @@ export async function sendTransaction(
     if (transaction.value) {
       transaction.value = BigNumber.from(transaction.value)
     }
-    transaction.gasLimit = 1000000
+
+    //transaction.gasLimit = 1000000
     return sendTransactionViaWallet(transaction)
   }
 }
+
+export async function sendTransactionGetReceipt(
+    transaction: ethers.providers.TransactionRequest
+): Promise<any> {
+  if (CurrentWallet.type===  WalletType.EXTENSION) {
+    transaction.maxFeePerGas = transaction.maxFeePerGas?.toString()
+    transaction.maxPriorityFeePerGas = transaction.maxPriorityFeePerGas?.toString()
+    return sendTransactionViaExtensionGetReceipt(transaction)
+  } else {
+    if (transaction.value) {
+      transaction.value = BigNumber.from(transaction.value)
+    }
+    transaction.gasLimit = 1000000
+    return sendTransactionViaWalletReceipt(transaction)
+  }
+}
+
 
 export async function connectBrowserExtensionWallet() {
   if (!window.ethereum) {
@@ -80,8 +98,6 @@ export async function connectBrowserExtensionWallet() {
   }
 
   walletExtensionAddress = accounts[0]
-  console.log("accounts")
-  console.log(walletExtensionAddress)
   return walletExtensionAddress
 }
 
@@ -177,5 +193,41 @@ async function sendTransactionViaWallet(
     return TransactionState.Sent
   } else {
     return TransactionState.Failed
+  }
+}
+
+async function sendTransactionViaWalletReceipt(
+    transaction: ethers.providers.TransactionRequest
+): Promise<any> {
+  if (transaction.value) {
+    transaction.value = BigNumber.from(transaction.value)
+  }
+  const txRes = await wallet.sendTransaction(transaction)
+
+  let receipt = null
+  const provider = getProvider()
+  if (!provider) {
+    return [TransactionState.Failed,null]
+  }
+
+  while (receipt === null) {
+    try {
+      receipt = await provider.getTransactionReceipt(txRes.hash)
+
+      if (receipt === null) {
+        continue
+      }
+      console.log(`Receipt recived:`, receipt)
+    } catch (e) {
+      console.log(`Receipt error:`, e)
+      break
+    }
+  }
+
+  // Transaction was successful if status === 1
+  if (receipt) {
+    return [TransactionState.Sent,receipt]
+  } else {
+    return [TransactionState.Failed,null]
   }
 }

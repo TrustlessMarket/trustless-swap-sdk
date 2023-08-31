@@ -39,6 +39,34 @@ export async function getCurrencyBalance(
   return toReadableAmount(balance, decimals)
 }
 
+export async function getCurrencyApproveRouter(
+    provider: providers.Provider,
+    address: string,
+    currency: Currency
+): Promise<number> {
+  // Handle ETH directly
+  if (currency.isNative) {
+    return -1
+  }
+
+  console.log("address",address)
+
+  // Get currency otherwise
+  const ERC20Contract = new ethers.Contract(
+      currency.address,
+      ERC20_ABI,
+      provider
+  )
+  const amountAprrove: number = await ERC20Contract.allowance(address,CurrentConfig.SWAP_ROUTER_ADDRESS)
+  console.log("address1",address)
+  const decimals: number = await ERC20Contract.decimals()
+  console.log("amountAprrove",amountAprrove)
+
+  // Format with proper units (approximate)
+  return Number(toReadableAmount(amountAprrove, decimals))
+}
+
+
 // wraps ETH (rounding up to the nearest ETH for decimal places)
 export async function wrapETH(eth: number) {
   const provider = getProvider()

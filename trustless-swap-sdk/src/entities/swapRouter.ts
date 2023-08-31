@@ -12,6 +12,7 @@ import { MethodParameters, toHex } from '../utils/calldata'
 import ISwapRouter from './SwRouter.json'
 import { Multicall } from './multicall'
 import { FeeOptions, Payments } from './payments'
+import { CurrentConfig } from '../config'
 
 /**
  * Options for producing the arguments to send calls to the router.
@@ -71,11 +72,9 @@ export abstract class SwapRouter {
     if (!Array.isArray(trades)) {
       trades = [trades]
     }
-
     const sampleTrade = trades[0]
     const tokenIn = sampleTrade.inputAmount.currency.wrapped
     const tokenOut = sampleTrade.outputAmount.currency.wrapped
-
     // All trades should have the same starting and ending token.
     invariant(
       trades.every(trade => trade.inputAmount.currency.wrapped.equals(tokenIn)),
@@ -97,10 +96,10 @@ export abstract class SwapRouter {
     )
 
     // flag for whether a refund needs to happen
-    const mustRefund = sampleTrade.inputAmount.currency.isNative && sampleTrade.tradeType === TradeType.EXACT_OUTPUT
-    const inputIsNative = sampleTrade.inputAmount.currency.isNative
+    const mustRefund = (sampleTrade.inputAmount.currency.isNative ||  sampleTrade.inputAmount.currency.address.toLowerCase() == CurrentConfig.TC_CONTRACT_ADDRESS.toLowerCase()) && sampleTrade.tradeType === TradeType.EXACT_OUTPUT
+    const inputIsNative = sampleTrade.inputAmount.currency.isNative ||  sampleTrade.inputAmount.currency.address.toLowerCase() == CurrentConfig.TC_CONTRACT_ADDRESS.toLowerCase()
     // flags for whether funds should be send first to the router
-    const outputIsNative = sampleTrade.outputAmount.currency.isNative
+    const outputIsNative = sampleTrade.outputAmount.currency.isNative ||  sampleTrade.outputAmount.currency.address.toLowerCase() == CurrentConfig.TC_CONTRACT_ADDRESS.toLowerCase()
     const routerMustCustody = outputIsNative || !!options.fee
 
     const totalValue: CurrencyAmount<Currency> = inputIsNative
@@ -123,7 +122,6 @@ export abstract class SwapRouter {
 
         // flag for whether the trade is single hop or not
         const singleHop = route.pools.length === 1
-
         if (singleHop) {
           if (trade.tradeType === TradeType.EXACT_INPUT) {
             const exactInputSingleParams = {
@@ -175,7 +173,6 @@ export abstract class SwapRouter {
               amountOut,
               amountInMaximum: amountIn
             }
-
             calldatas.push(SwapRouter.INTERFACE.encodeFunctionData('exactOutput', [exactOutputParams]))
           }
         }

@@ -15,7 +15,6 @@ export function toReadableAmount(rawAmount: number, decimals: number): string {
 }
 
 export function displayTrade(trade: Trade<Token, Token, TradeType>): string {
-  console.log(trade.outputAmount.toExact())
   return `${trade.inputAmount.toExact()} ${
     trade.inputAmount.currency.symbol
   } for ${trade.outputAmount.toExact()} ${trade.outputAmount.currency.symbol}`

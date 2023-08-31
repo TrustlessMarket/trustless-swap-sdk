@@ -191,8 +191,6 @@ export async function getPositionInfo(tokenId: number): Promise<PositionInfo> {
   )
 
   const position = await positionContract.positions(tokenId)
-  console.log("position",position)
- // console.log("tokensOwed1",position.tokensOwed1)
 
   return {
     tickLower: position.tickLower,
@@ -232,7 +230,6 @@ export async function getTokenTransferApproval(
       from: address,
     })
   } catch (e) {
-    console.error(e)
     return TransactionState.Failed
   }
 }

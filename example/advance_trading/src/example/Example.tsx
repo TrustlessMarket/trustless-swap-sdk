@@ -36,7 +36,7 @@ let select2= ""
 
  // choiceConFig(Environment.MAINNET)
  // refreshProvider()
-    changeWallet(WalletType.PRIVATEKEY,"0x3B6c50437765f996A609eA479766141BB7903761","c46e21b81b8b70e0fdcbd537a9dd52fccd86a116ea2e998b2163ba51cd3c9bc4")
+    changeWallet(WalletType.PRIVATEKEY,"0x3B6c50437765f996A609eA479766141BB7903761","")
     //changeWallet(WalletType.EXTENSION,"","")
     refreshProvider()
   setTOkenSwap(CurrentConfig.tokens_list[0],1,CurrentConfig.tokens_list[2],10000)
@@ -64,14 +64,10 @@ const getList = async () => {
             listToken.push(res.data[index])
             options.push( { value: res.data[index].address, label: res.data[index].symbol })
         }
-        console.log(res);
         setTokens(listToken)
-        console.log(listToken);
-        console.log("223333 vo day");
 
         // setList(res || []);
     } catch (error) {
-        console.log("223333err"+error);
 
     } finally {
 
@@ -161,8 +157,6 @@ const Example = () => {
 
     const handleChange = async (selectedOption:any) =>  {
 
-
-        console.log(`Option selected:`, selectedOption)
         select1 = selectedOption.value
         options2 = []
         const res = await fetch(
@@ -175,7 +169,6 @@ const Example = () => {
             listToken.push(res.data[index])
             options2.push( { value: res.data[index].address, label: res.data[index].symbol })
         }
-        console.log(res)
     };
 
     // Update wallet state given a block number
@@ -185,7 +178,6 @@ const Example = () => {
     if (!address || !provider) {
       return
     }
-    console.log(address)
     setTokenInBalance(await getCurrencyBalance(provider, address, tokenSwap.in))
     setTokenOutBalance(await getCurrencyBalance(provider, address, tokenSwap.out))
   }, [])
@@ -205,10 +197,7 @@ const Example = () => {
           alert("Invalid token")
           return ;
       }
-      console.log(options);
-     // console.log(option);
       const in_amount =parseFloat( getValues("amount").toString());
-     // alert(in_amount);
 
       const token1 = new Token(
           1,
@@ -229,7 +218,6 @@ const Example = () => {
 
   const onTrade = useCallback(async (trade: TokenTrade | undefined) => {
       const values = getValues();
-      console.log(values);
       if (trade) {
       setTxState(await executeTrade(trade))
     }
