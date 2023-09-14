@@ -29,11 +29,23 @@ export async function getPoolInfo(): Promise<PoolInfo> {
     initCodeHashManualOverride:"0x04759a882be3a45ff74719de5c82516d29af4b3480d076fc0c57b2fdab813bc7",
   })
 
+  console.log("vao day 1",{
+    factoryAddress: POOL_FACTORY_CONTRACT_ADDRESS,
+    tokenA: CurrentConfig.tokens.token0,
+    tokenB: CurrentConfig.tokens.token1,
+    fee: CurrentConfig.tokens.poolFee,
+    initCodeHashManualOverride:"0x04759a882be3a45ff74719de5c82516d29af4b3480d076fc0c57b2fdab813bc7",
+  })
+  console.log(currentPoolAddress)
+  alert(currentPoolAddress)
   const poolContract = new ethers.Contract(
     currentPoolAddress,
       IV3PoolABI.abi,
     provider
   )
+  const liquidity1 = await poolContract.liquidity()
+  const slot1 = await poolContract.slot0()
+  console.log("vao day 2")
 
   const [token0, token1, fee, tickSpacing, liquidity, slot0] =
     await Promise.all([

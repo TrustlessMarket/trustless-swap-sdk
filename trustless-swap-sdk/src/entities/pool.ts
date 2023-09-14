@@ -80,8 +80,6 @@ export class Pool {
   ) {
     invariant(Number.isInteger(fee) && fee < 1_000_000, 'FEE')
 
-    console.log("tickCurrent",tickCurrent)
-
     const tickCurrentSqrtRatioX96 = TickMath.getSqrtRatioAtTick(tickCurrent)
     const nextTickSqrtRatioX96 = TickMath.getSqrtRatioAtTick(tickCurrent + 1)
     invariant(

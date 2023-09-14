@@ -22,7 +22,7 @@ export async function getCurrencyBalance(
     currency: Currency
 ): Promise<string> {
   // Handle ETH directly
-  if (currency.isNative) {
+  if (currency.isNative || currency.address.toLowerCase() == CurrentConfig.TC_CONTRACT_ADDRESS.toLowerCase()) {
     return ethers.utils.formatEther(await provider.getBalance(address))
   }
 

@@ -65,14 +65,20 @@ export async function getPoolInfo(tokenIn: Token,tokenOut:Token,poolFee:number )
   if (!provider) {
     throw new Error('No provider')
   }
-
+  console.log("vao day 4")
   const currentPoolAddress = computePoolAddress({
     factoryAddress:CurrentConfig.POOL_FACTORY_CONTRACT_ADDRESS,
     tokenA: tokenIn,
     tokenB: tokenOut,
     fee: poolFee
   })
-
+  console.log("vao day 7")
+  console.log("param",{
+    factoryAddress:CurrentConfig.POOL_FACTORY_CONTRACT_ADDRESS,
+    tokenA: tokenIn,
+    tokenB: tokenOut,
+    fee: poolFee
+  })
   const poolContract = new ethers.Contract(
       currentPoolAddress,
       IV3PoolABI.abi,
@@ -88,6 +94,7 @@ export async function getPoolInfo(tokenIn: Token,tokenOut:Token,poolFee:number )
       poolContract.liquidity(),
       poolContract.slot0(),
     ])
+  console.log("vao day 6")
 
   return {
     token0,

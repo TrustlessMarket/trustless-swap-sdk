@@ -17,14 +17,14 @@ import {encodePath, getPoolInfoByToken} from './poolinfo'
 //import queryString from 'query-string';
 import {isEmpty,random} from 'lodash';
 import camelCase from 'lodash/camelCase'
-import {CurrentConfig, Environment, tokenSwap,} from './config'
+import {CurrentConfig, CurrentWallet, Environment, tokenSwap, WalletType,} from './config'
 
 import {
   getProvider,
   getWalletAddress,
   sendTransaction,
   sendTransactionGetReceipt,
-  TransactionState,
+  TransactionState,geSignerAddress
 } from './providers'
 import {
   getCurrencyApproveRouter
@@ -215,9 +215,24 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
 
   }
 
-  const promises = swapRoutes.map(async (route: any) => {
+    let swapRoutes1 = []
+    for (var route of swapRoutes) {
+      if(route?.pathPairs.length>0 && (Number(route?.pathPairs[0].reserve0)>0.000001 || Number(route?.pathPairs[0].reserve1)>0.000001))
+      {
+        swapRoutes1.push(route)
+      }
+    }
+
+  const promises = swapRoutes1.map(async (route: any) => {
     const addresses = route?.pathTokens?.map((token: IToken) => token.address);
     const fees = route?.pathPairs?.map((pair: any) => Number(pair.fee));
+    //console.log("route?.pathPairs",route?.pathPairs);
+    /*
+    if(route?.pathPairs.length>0 && Number(route?.pathPairs[0].reserve0)<0.000001 && Number(route?.pathPairs[0].reserve1)<0.000001)
+    {
+      return 0;
+    }
+     */
     const transaction = await quoteContract
         .connect(provider)
         .callStatic
@@ -231,6 +246,7 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
 
 
   const res:number[] = await Promise.all(promises);
+  console.log("res",res)
   const result = Math.max(...res);
   const indexBestRoute = res.indexOf(result);
   const bestRoute = swapRoutes[indexBestRoute];
@@ -278,7 +294,7 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
     tradeType: TradeType.EXACT_INPUT,
   })
 
-  return [result,bestRoute,uncheckedTrade]
+  return [result,bestRoute,uncheckedTrade,result.toLocaleString('fullwide', {useGrouping:false}) ]
   } catch (error) {
 
   } finally {
@@ -324,10 +340,18 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
       listToken1 = res ? camelCaseKeys(res) : [];
 
     }
+    let swapRoutes1 = []
+    for (var route of swapRoutes) {
+      if(route?.pathPairs.length>0 && (Number(route?.pathPairs[0].reserve0)>0.000001 || Number(route?.pathPairs[0].reserve1)>0.000001))
+      {
+        swapRoutes1.push(route)
+      }
+    }
 
-    const promises = swapRoutes.map(async (route: any) => {
+    const promises = swapRoutes1.map(async (route: any) => {
       let addresses = route?.pathTokens?.map((token: IToken) => token.address);
       let fees = route?.pathPairs?.map((pair: any) => Number(pair.fee));
+
       addresses = addresses.reverse()
       fees = fees.reverse()
       const transaction = await quoteContract
@@ -341,6 +365,7 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
       return Number(transaction.amountIn.toString());
     });
     const res:number[] = await Promise.all(promises);
+    console.log("res",res)
     const result = Math.min(...res);
     const indexBestRoute = res.indexOf(result);
     const bestRoute = swapRoutes[indexBestRoute];
@@ -483,8 +508,10 @@ export async function executeTradeSlippage(
     slippage: number
 ): Promise<any> {
 
-
-  const walletAddress = getWalletAddress()
+  let walletAddress = getWalletAddress()
+  if (!walletAddress && CurrentWallet.type === WalletType.EXTENSION){
+    walletAddress =  await geSignerAddress()
+  }
   if (!walletAddress ) {
     throw new Error('Cannot execute a trade without a connected wallet')
   }

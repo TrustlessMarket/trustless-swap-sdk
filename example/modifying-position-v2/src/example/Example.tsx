@@ -2,7 +2,7 @@ import { WalletType,setTOkenSwap,setTOkenIn,setTOkenOut,changeWallet,tokenSwap,C
     connectBrowserExtensionWallet,
     getProvider,
     getWalletAddress,
-    TransactionState,
+    TransactionState,choiceConFig,
     refreshProvider, createTrade, executeTrade, TokenTrade,setTokens,gettokenIndex,
     displayTrade,getCurrencyBalance
 } from 'trustless-swap-sdk'
@@ -24,8 +24,9 @@ import {
     // choiceConFig(Environment.MAINNET)
     // refreshProvider()
    // changeWallet(WalletType.PRIVATEKEY,"0x3B6c50437765f996A609eA479766141BB7903761","c46e21b81b8b70e0fdcbd537a9dd52fccd86a116ea2e998b2163ba51cd3c9bc4")
+    choiceConFig(Environment.MAINNET)
     changeWallet(WalletType.EXTENSION,"","")
-    refreshProvider()
+    refreshProvider(null)
    // setTOkenSwap(CurrentConfig.tokens_list[0],1,CurrentConfig.tokens_list[2],10000)
 }
 
@@ -59,19 +60,21 @@ const Example = () => {
     if (!provider || !address) {
       return
     }
-
+      console.log("vao day")
     // Set Balances
-    setToken0Balance(
+
+      setToken0Balance(
       await getCurrencyBalance(provider, address, tokenLiquidity.token0)
     )
     setToken1Balance(
       await getCurrencyBalance(provider, address, tokenLiquidity.token1)
     )
+       // Set Position Info
+       const ids = await getPositionIds()
+       setPositionIds(ids)
+       setPositionsInfo(await Promise.all(ids.map(getPositionInfo)))
 
-    // Set Position Info
-    const ids = await getPositionIds()
-    setPositionIds(ids)
-    setPositionsInfo(await Promise.all(ids.map(getPositionInfo)))
+
   }, [])
 
   // Event Handlers

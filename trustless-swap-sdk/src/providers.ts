@@ -4,7 +4,7 @@ import {BigNumber, ethers, providers} from 'ethers'
 import {CurrentConfig, CurrentWallet, WalletType} from './config'
 
 // Single copies of provider and wallet
-const mainnetProvider = new ethers.providers.JsonRpcProvider(
+let mainnetProvider = new ethers.providers.JsonRpcProvider(
     CurrentConfig.rpc
 )
 let wallet:ethers.Wallet
@@ -12,13 +12,19 @@ let wallet:ethers.Wallet
 let browserExtensionProvider : ethers.providers.Web3Provider | null
 let walletExtensionAddress: string | null = null
 
-export function refreshProvider()
+export function refreshProvider(provider:any)
 {
+  mainnetProvider = new ethers.providers.JsonRpcProvider(
+      CurrentConfig.rpc
+  )
   if(CurrentWallet.type==WalletType.PRIVATEKEY && CurrentWallet.privateKey!=""){
     wallet =  createWallet()
   }
   else if(CurrentWallet.type==WalletType.EXTENSION){
-    browserExtensionProvider = createBrowserExtensionProvider()
+    if(!provider){
+      provider = createBrowserExtensionProvider()
+    }
+    browserExtensionProvider = provider
   }
 
 }
@@ -48,6 +54,16 @@ export function getWalletAddress(): string | null {
   return CurrentWallet.type===  WalletType.EXTENSION
       ? walletExtensionAddress
       : wallet.address
+}
+
+export async function geSignerAddress(): Promise<string>{
+  const signer =  browserExtensionProvider?.getSigner()
+  if (!signer) {
+    return ""
+  }
+  const address =  await signer.getAddress()
+  console.log("signer address",address)
+  return address
 }
 
 export async function sendTransaction(
@@ -84,13 +100,16 @@ export async function sendTransactionGetReceipt(
 }
 
 
-export async function connectBrowserExtensionWallet() {
-  if (!window.ethereum) {
-    return null
+export async function connectBrowserExtensionWallet(provider:any = null) {
+  if(!provider) {
+    if (!window.ethereum) {
+      return null
+    }
+
+    const {ethereum} = window
+    provider = new ethers.providers.Web3Provider(ethereum)
   }
 
-  const { ethereum } = window
-  const provider = new ethers.providers.Web3Provider(ethereum)
   const accounts = await provider.send('eth_requestAccounts', [])
 
   if (accounts.length !== 1) {

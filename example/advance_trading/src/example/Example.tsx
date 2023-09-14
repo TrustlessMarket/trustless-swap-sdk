@@ -9,7 +9,7 @@ import { CurrentConfig, Environment,WalletType,setTOkenSwap,setTOkenIn,setTOkenO
     getWalletAddress,
     TransactionState,
     refreshProvider, createTrade, executeTrade, TokenTrade,setTokens,gettokenIndex,
-    displayTrade,getCurrencyBalance
+    displayTrade,choiceConFig,getCurrencyBalance,getBestRouteExactIn,
 } from 'trustless-swap-sdk'
 import Select from 'react-select';
 
@@ -34,27 +34,21 @@ let select2= ""
 
 {
 
- // choiceConFig(Environment.MAINNET)
+
  // refreshProvider()
-    changeWallet(WalletType.PRIVATEKEY,"0x3B6c50437765f996A609eA479766141BB7903761","")
-    //changeWallet(WalletType.EXTENSION,"","")
-    refreshProvider()
+    choiceConFig(Environment.MAINNET)
+    //changeWallet(WalletType.PRIVATEKEY,"0x3B6c50437765f996A609eA479766141BB7903761","c46e21b81b8b70e0fdcbd537a9dd52fccd86a116ea2e998b2163ba51cd3c9bc4")
+    changeWallet(WalletType.EXTENSION,"","")
+    refreshProvider(null)
   setTOkenSwap(CurrentConfig.tokens_list[0],1,CurrentConfig.tokens_list[2],10000)
 }
-let API_ROOT = ''
-if (CurrentConfig.env == Environment.MAINNET)
-{
-    API_ROOT ="https://www.fprotocol.io"
-}else  if (CurrentConfig.env == Environment.TESTNET)
-{
-    API_ROOT ="https://dev.fprotocol.io"
-}
+
 
 const getList = async () => {
 
     try {
         const res = await fetch(
-            API_ROOT+`/api/swap/token/list/v1?is_test=&limit=500&network=nos&page=1`,
+            CurrentConfig.API_ROOT+`/api/swap/token/list/v1?is_test=&limit=500&network=nos&page=1`,
         ).then((res) => {
             return res.json();
         });
@@ -160,7 +154,7 @@ const Example = () => {
         select1 = selectedOption.value
         options2 = []
         const res = await fetch(
-            API_ROOT+`/api/swap/token/list/v1?from_token=`+selectedOption.value+`&is_test=&limit=500&network=nos&page=1`,
+            CurrentConfig.API_ROOT+`/api/swap/token/list/v1?from_token=`+selectedOption.value+`&is_test=&limit=500&network=nos&page=1`,
         ).then((res) => {
             return res.json()
         });
@@ -178,13 +172,16 @@ const Example = () => {
     if (!address || !provider) {
       return
     }
+console.log("tokenSwap.in",tokenSwap.in)
+      console.log("ttokenSwap.out",tokenSwap.out)
+
     setTokenInBalance(await getCurrencyBalance(provider, address, tokenSwap.in))
-    setTokenOutBalance(await getCurrencyBalance(provider, address, tokenSwap.out))
+   setTokenOutBalance(await getCurrencyBalance(provider, address, tokenSwap.out))
   }, [])
 
   // Event Handlers
   const onConnectWallet = useCallback(async () => {
-    if (await connectBrowserExtensionWallet()) {
+    if (await connectBrowserExtensionWallet(null)) {
       refreshBalances()
     }
   }, [refreshBalances])
@@ -213,7 +210,9 @@ const Example = () => {
           listToken[index2].symbol)
       setTOkenSwap(token1,in_amount,token2,3000)
     refreshBalances()
-    setTrade(await createTrade())
+      console.log(in_amount)
+      const rs1 = await getBestRouteExactIn(in_amount)
+     setTrade(rs1[2])
   }, [refreshBalances])
 
   const onTrade = useCallback(async (trade: TokenTrade | undefined) => {
@@ -325,3 +324,4 @@ const Example = () => {
 }
 
 export default Example
+

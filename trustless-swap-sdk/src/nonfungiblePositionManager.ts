@@ -11,6 +11,8 @@ import {
 import {
   NativeCurrency} from './entities/nativeCurrency'
 
+import {CurrentConfig} from './config'
+
 
 import JSBI from 'jsbi'
 import invariant from 'tiny-invariant'
@@ -24,6 +26,8 @@ import { ADDRESS_ZERO } from './constants'
 import { Pool } from './entities'
 import { Multicall } from './multicall'
 import { Payments } from './payments'
+import { fromReadableAmount} from './utils1'
+
 
 const MaxUint128 = toHex(JSBI.subtract(JSBI.exponentiate(JSBI.BigInt(2), JSBI.BigInt(128)), JSBI.BigInt(1)))
 
@@ -198,6 +202,182 @@ export abstract class NonfungiblePositionManager {
     return {
       calldata: this.encodeCreate(pool),
       value: toHex(0)
+    }
+  }
+
+  public static encodeCollectById( tokenId:any,
+                                    account: any):MethodParameters
+  {
+    const calldatas: string[] = []
+
+    // collect
+    calldatas.push(
+        NonfungiblePositionManager.INTERFACE.encodeFunctionData('collect', [
+          {
+            tokenId,
+            recipient: account,
+            amount0Max: MaxUint128,
+            amount1Max: MaxUint128
+          }
+        ])
+    )
+    return {
+      calldata:  Multicall.encodeMulticall(calldatas),
+      value: toHex(0)
+    }
+  }
+
+  public static encodeIncrease( tokenId:any,
+                                 amount0Desired:any, amount1Desired:any, amount0Min:any, amount1Min:any,deadline:any):MethodParameters
+  {
+    const calldatas: string[] = []
+    // collect
+
+    calldatas.push(
+        NonfungiblePositionManager.INTERFACE.encodeFunctionData('increaseLiquidity', [
+          {
+            tokenId: tokenId,
+            amount0Desired: amount0Desired,
+            amount1Desired: amount1Desired,
+            amount0Min,
+            amount1Min,
+            deadline
+          }
+        ])
+    )
+    return {
+      calldata:  Multicall.encodeMulticall(calldatas),
+      value: toHex(0)
+    }
+  }
+
+  public static encodeRemoveLiqidity( tokenId:any,
+                                liquidity:any, amount0Min:any, amount1Min:any,deadline:any,account:any):MethodParameters
+  {
+    const calldatas: string[] = []
+    // collect
+
+    calldatas.push(
+        NonfungiblePositionManager.INTERFACE.encodeFunctionData('decreaseLiquidity', [
+          {
+            tokenId: tokenId,
+            liquidity:liquidity,
+            amount0Min: amount0Min,
+            amount1Min: amount1Min,
+            deadline: deadline,
+          }
+        ])
+    )
+    calldatas.push(
+        NonfungiblePositionManager.INTERFACE.encodeFunctionData('collect', [
+          {
+            tokenId,
+            recipient: account,
+            amount0Max: MaxUint128,
+            amount1Max: MaxUint128
+          }
+        ])
+    )
+
+    return {
+      calldata:  Multicall.encodeMulticall(calldatas),
+      value: toHex(0)
+    }
+  }
+
+  public static encodeRemovePosition( tokenId:any):MethodParameters {
+    const calldatas: string[] = []
+    // collect
+
+    calldatas.push(
+        NonfungiblePositionManager.INTERFACE.encodeFunctionData('burn', [
+          {
+            tokenId: tokenId
+          }
+        ])
+    )
+
+    return {
+      calldata:  Multicall.encodeMulticall(calldatas),
+      value: toHex(0)
+    }
+  }
+
+  public static addCallParametersCreate(isNewPool:Boolean,
+                                     fee:any,
+                                        token0:any,
+                                        token1:any,
+                                     amountADesired:any,
+                                     amountBDesired:any,
+                                     lowerTick:any,
+                                     upperTick:any,
+                                     amount0Min:any,
+                                     amount1Min:any,
+                                     currentPrice:any,
+                                     account:any,
+                                     deadline:any,
+                                     ) :MethodParameters
+  {
+
+
+    const calldatas: string[] = []
+    let value: string = toHex(0)
+    if(!isNewPool){
+      calldatas.push(
+          NonfungiblePositionManager.INTERFACE.encodeFunctionData('mint', [
+            {
+              token0: token0,
+              token1: token1,
+              fee: fee,
+              tickLower: lowerTick,
+              tickUpper: upperTick,
+              amount0Desired: fromReadableAmount(amountADesired,18),
+              amount1Desired: fromReadableAmount(amountBDesired,18),
+              amount0Min:amount0Min,
+              amount1Min: amount1Min,
+              recipient: account,
+              deadline: deadline,
+            }
+          ])
+      )
+
+    } else  {
+      calldatas.push(
+          NonfungiblePositionManager.INTERFACE.encodeFunctionData('createAndInitializePoolIfNecessary', [
+            token0,
+            token1,
+            fee,
+            currentPrice,
+          ]))
+      calldatas.push(
+          NonfungiblePositionManager.INTERFACE.encodeFunctionData('mint', [
+            {
+              token0: token0,
+              token1: token1,
+              fee: fee,
+              tickLower: lowerTick,
+              tickUpper: upperTick,
+              amount0Desired: fromReadableAmount(amountADesired,18),
+              amount1Desired: fromReadableAmount(amountBDesired,18),
+              amount0Min:amount0Min,
+              amount1Min: amount1Min,
+              recipient: account,
+              deadline: deadline,
+            }
+          ])
+      )
+    }
+
+    if (token0.toLowerCase() === CurrentConfig.TC_CONTRACT_ADDRESS.toLowerCase() || token1.toLowerCase() === CurrentConfig.TC_CONTRACT_ADDRESS.toLowerCase()) {
+      const wrappedValue = token0.toLowerCase() === CurrentConfig.TC_CONTRACT_ADDRESS.toLowerCase() ? fromReadableAmount(amountADesired,18) : fromReadableAmount(amountBDesired,18)
+      if (wrappedValue.gt(0)) {
+        calldatas.push(Payments.encodeRefundETH())
+      }
+      value =toHex(wrappedValue.toString())
+    }
+    return {
+      calldata: Multicall.encodeMulticall(calldatas),
+      value
     }
   }
 

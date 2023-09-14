@@ -5,25 +5,26 @@ import { ChainId, Token } from 'trustless-swap-sdk'
 // Addresses
 
 export const POOL_FACTORY_CONTRACT_ADDRESS =
-    '0x9D921bF7460d1FcfF77d88edd4D34cD1e2F56BDc'
+    '0x1d12AC81710da54A50e2e9095E20dB2D915Ce3C8'
 export const NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS =
-    '0xe6Dc33d13200f0A9CF7cFC7B484aE1891D934234'
+    '0x7D9D03317e90E477180dcFE28c75f8007Ecc6031'
 // Currencies and Tokens
 
-export const WETH_TOKEN = new Token(
-    ChainId.MAINNET,
-    '0x0FBa66555B74F13809862BD6f15FffA0A0237059',
+export const WETH_TOKEN= new Token(
+    1,
+    '0x111808AbE352c8003e0eFfcc04998EaB26Cebe3c',
     18,
-    'WETH',
-    'WETH'
+    'token1',
+    'token1',
 )
 
-export const WBTC_TOKEN = new Token(
-    ChainId.MAINNET,
-    '0x1d45c32C97707C916b350042CEAC2164fb6D00A1',
+export const WBTC_TOKEN =
+    new Token(
+    1,
+    '0x43bDa480DE297A14cec95bFb1C6A313615f809Ef',
     18,
-    'WBTC',
-    'WBTC'
+    'tk2',
+    'tk2'
 )
 
 // Transactions

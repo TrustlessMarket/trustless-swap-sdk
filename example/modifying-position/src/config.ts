@@ -33,10 +33,10 @@ export interface ExampleConfig {
 // Example Configuration
 
 export const CurrentConfig: ExampleConfig = {
-  env: Environment.MAINNET,
+  env: Environment.WALLET_EXTENSION,
   rpc: {
-    local: 'https://l2-node.regtest.trustless.computer',
-    mainnet: 'https://l2-node.regtest.trustless.computer',
+    local: 'https://node.l2.trustless.computer',
+    mainnet: 'https://node.l2.trustless.computer',
   },
   wallet: {
     address: '0x3B6c50437765f996A609eA479766141BB7903761',
@@ -48,7 +48,7 @@ export const CurrentConfig: ExampleConfig = {
     token0Amount: 0.5,
     token1: WBTC_TOKEN,
     token1Amount: 0.2,
-    poolFee: FeeAmount.LOW,
+    poolFee: FeeAmount.MEDIUM,
     fractionToRemove: 1,
     fractionToAdd: 0.5,
   },

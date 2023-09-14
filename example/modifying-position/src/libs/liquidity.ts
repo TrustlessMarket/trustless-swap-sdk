@@ -272,6 +272,8 @@ export async function mintPosition(): Promise<TransactionState> {
   if (!address || !provider) {
     return TransactionState.Failed
   }
+
+  /*
   // Give approval to the contract to transfer tokens
   const tokenInApproval = await getTokenTransferApproval(
     CurrentConfig.tokens.token0
@@ -285,7 +287,7 @@ export async function mintPosition(): Promise<TransactionState> {
     tokenOutApproval !== TransactionState.Sent
   ) {
     return TransactionState.Failed
-  }
+  }*/
 
   const positionToMint = await constructPosition(
     CurrencyAmount.fromRawAmount(

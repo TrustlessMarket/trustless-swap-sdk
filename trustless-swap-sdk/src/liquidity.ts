@@ -6,7 +6,7 @@ import {
   NONFUNGIBLE_POSITION_MANAGER_ABI,
 } from './constants'
 import { TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER } from './constants'
-import { sendTransaction, TransactionState } from './providers'
+import {geSignerAddress, sendTransaction, sendTransactionGetReceipt, TransactionState} from './providers'
 
 import { Pool } from './entities/pool'
 import { Position } from './entities/position'
@@ -15,7 +15,7 @@ import { Token } from './entities/token'
 import { Percent } from './entities/fractions/percent'
 import { CurrencyAmount } from './entities/fractions/currencyAmount'
 import { NonfungiblePositionManager,MintOptions,AddLiquidityOptions,RemoveLiquidityOptions,CollectOptions } from './nonfungiblePositionManager'
-import { CurrentConfig,tokenLiquidity } from './config'
+import {CurrentConfig, CurrentWallet, tokenLiquidity, WalletType} from './config'
 import { getPoolInfo } from './poolinfo'
 import { getProvider, getWalletAddress } from './providers'
 import { fromReadableAmount } from './conversion'
@@ -28,6 +28,165 @@ export interface PositionInfo {
   feeGrowthInside1LastX128: BigNumber
   tokensOwed0: BigNumber
   tokensOwed1: BigNumber
+}
+
+
+export async function CollectFeeeById(
+    tokenId:any
+):Promise<TransactionState> {
+
+  let walletAddress = getWalletAddress()
+  if (!walletAddress && CurrentWallet.type === WalletType.EXTENSION){
+    walletAddress =  await geSignerAddress()
+  }
+  if (!walletAddress ) {
+    return TransactionState.Failed
+  }
+
+  // get calldata for increasing a position
+  const { calldata, value } = NonfungiblePositionManager.encodeCollectById(
+      tokenId,walletAddress
+  )
+  // build transaction
+  const transaction = {
+    data: calldata,
+    to: CurrentConfig.NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+    value: value,
+    from: walletAddress
+  }
+  return await sendTransactionGetReceipt(transaction)
+}
+
+export async function increaseLiquidity(
+    tokenId:any,
+    amount0Desired:any, amount1Desired:any, amount0Min:any, amount1Min:any,deadline:any
+):Promise<TransactionState> {
+
+  let walletAddress = getWalletAddress()
+  if (!walletAddress && CurrentWallet.type === WalletType.EXTENSION){
+    walletAddress =  await geSignerAddress()
+  }
+  if (!walletAddress ) {
+    return TransactionState.Failed
+  }
+
+  // get calldata for increasing a position
+  const { calldata, value } = NonfungiblePositionManager.encodeIncrease(
+      tokenId,amount0Desired,amount1Desired,amount0Min, amount1Min,deadline
+  )
+  // build transaction
+  const transaction = {
+    data: calldata,
+    to: CurrentConfig.NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+    value: value,
+    from: walletAddress
+  }
+  return await sendTransactionGetReceipt(transaction)
+}
+
+export async function decreaseLiquidity(
+    tokenId:any,liquidity:any, amount0Min:any, amount1Min:any,deadline:any
+):Promise<TransactionState> {
+
+  let walletAddress = getWalletAddress()
+  if (!walletAddress && CurrentWallet.type === WalletType.EXTENSION){
+    walletAddress =  await geSignerAddress()
+  }
+  if (!walletAddress ) {
+    return TransactionState.Failed
+  }
+
+  // get calldata for increasing a position
+  const { calldata, value } = NonfungiblePositionManager.encodeRemoveLiqidity(
+      tokenId,liquidity,amount0Min, amount1Min,deadline, walletAddress
+  )
+  // build transaction
+  const transaction = {
+    data: calldata,
+    to: CurrentConfig.NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+    value: value,
+    from: walletAddress
+  }
+  return await sendTransactionGetReceipt(transaction)
+}
+
+export async function removePosition(
+    tokenId:any
+):Promise<TransactionState> {
+
+  let walletAddress = getWalletAddress()
+  if (!walletAddress && CurrentWallet.type === WalletType.EXTENSION){
+    walletAddress =  await geSignerAddress()
+  }
+  if (!walletAddress ) {
+    return TransactionState.Failed
+  }
+
+  // get calldata for increasing a position
+  const { calldata, value } = NonfungiblePositionManager.encodeRemovePosition(
+      tokenId
+  )
+  // build transaction
+  const transaction = {
+    data: calldata,
+    to: CurrentConfig.NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+    value: value,
+    from: walletAddress
+  }
+  return await sendTransactionGetReceipt(transaction)
+}
+
+export async function addLiquidityIncludeCreatePool(
+    isNewPool:Boolean,
+    fee:any,
+    token0:any,
+    token1:any,
+    amountADesired:any,
+    amountBDesired:any,
+    lowerTick:any,
+    upperTick:any,
+    amount0Min:any,
+    amount1Min:any,
+    currentPrice:any,
+    deadline:any,
+):Promise<TransactionState> {
+
+
+  let walletAddress = getWalletAddress()
+  if (!walletAddress && CurrentWallet.type === WalletType.EXTENSION){
+    walletAddress =  await geSignerAddress()
+  }
+  if (!walletAddress ) {
+    return TransactionState.Failed
+  }
+
+  // get calldata for increasing a position
+  const { calldata, value } = NonfungiblePositionManager.addCallParametersCreate(
+      isNewPool,
+      fee,
+      token0,
+      token1,
+      amountADesired,
+      amountBDesired,
+      lowerTick,
+      upperTick,
+      amount0Min,
+      amount1Min,
+      currentPrice,
+      walletAddress,
+      deadline,
+  )
+
+
+  // build transaction
+  const transaction = {
+    data: calldata,
+    to: CurrentConfig.NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+    value: value,
+    from: walletAddress
+  }
+  return await sendTransactionGetReceipt(transaction)
+
 }
 
 export async function addLiquidity(
@@ -159,9 +318,9 @@ export async function getPositionIds(): Promise<number[]> {
     NONFUNGIBLE_POSITION_MANAGER_ABI,
     provider
   )
-
   // Get number of positions
   const balance: number = await positionContract.balanceOf(address)
+
 
   // Get all positions
   const tokenIds = []
@@ -248,6 +407,7 @@ export async function constructPosition(
     poolInfo.tick
   )
 
+
   // create position using the maximum liquidity from input amounts
   return Position.fromAmounts({
     pool: configuredPool,
@@ -269,6 +429,8 @@ export async function mintPosition(): Promise<TransactionState> {
   if (!address || !provider) {
     return TransactionState.Failed
   }
+
+  /*
   // Give approval to the contract to transfer tokens
   const tokenInApproval = await getTokenTransferApprovalPosition(
     tokenLiquidity.token0
@@ -283,6 +445,7 @@ export async function mintPosition(): Promise<TransactionState> {
   ) {
     return TransactionState.Failed
   }
+*/
 
   const positionToMint = await constructPosition(
     CurrencyAmount.fromRawAmount(
@@ -300,6 +463,7 @@ export async function mintPosition(): Promise<TransactionState> {
       )
     )
   )
+
 
   const mintOptions: MintOptions = {
     recipient: address,
@@ -325,3 +489,5 @@ export async function mintPosition(): Promise<TransactionState> {
 
   return sendTransaction(transaction)
 }
+
+
