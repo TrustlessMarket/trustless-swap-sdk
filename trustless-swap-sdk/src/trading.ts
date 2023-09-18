@@ -32,44 +32,11 @@ import {
 import {fromReadableAmount} from './utils1'
 import QuoterV2ABI from "./QuoterV2.json";
 import axios from 'axios';
+import  {IToken} from './interfaces/token'
 
-export interface IToken {
-  btcPrice?: number | string;
-  ownerSupply?: string | number;
-  toBalance?: string | number;
-  fromBalance?: string | number;
-  id: string;
-  deletedAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  address: string;
-  totalSupply?: any;
-  owner?: string;
-  deployedAtBlock?: number;
-  slug?: string;
-  symbol: string;
-  name: string;
-  price?: number | string;
-  usdPrice?: number;
-  usdVolume?: number;
-  usdTotalVolume?: number;
-  usdMarketCap?: number;
-  percent?: any;
-  percent7Day?: any;
-  volume?: number;
-  thumbnail?: string;
-  description?: string;
-  fromAddress?: string;
-  toAddress?: string;
-  index?: number;
-  balance?: string;
-  decimal?: number | string;
-  network?: string;
-  baseTokenSymbol?: string;
-  status?: string;
-  verifyCode?: string;
-  chart?: [];
-}
+
+
+
 
 export interface IPagingParams {
   limit?: number;
@@ -202,7 +169,7 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
     };
     swapRoutes = await getSwapRoutesV2(params);
   }
-  if(listToken1 == null || listToken1.length==0)
+  if( listToken1.length==0)
   {
     const res = await getSwapTokensV1({
       limit: 500,

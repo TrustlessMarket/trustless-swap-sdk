@@ -5,7 +5,7 @@ import {
   MAX_PRIORITY_FEE_PER_GAS,
   NONFUNGIBLE_POSITION_MANAGER_ABI,
 } from './constants'
-import { TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER } from './constants'
+import { TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER,MaxUint128 } from './constants'
 import {geSignerAddress, sendTransaction, sendTransactionGetReceipt, TransactionState} from './providers'
 
 import { Pool } from './entities/pool'
@@ -16,9 +16,58 @@ import { Percent } from './entities/fractions/percent'
 import { CurrencyAmount } from './entities/fractions/currencyAmount'
 import { NonfungiblePositionManager,MintOptions,AddLiquidityOptions,RemoveLiquidityOptions,CollectOptions } from './nonfungiblePositionManager'
 import {CurrentConfig, CurrentWallet, tokenLiquidity, WalletType} from './config'
-import { getPoolInfo } from './poolinfo'
+import { getPoolInfo} from './poolinfo'
 import { getProvider, getWalletAddress } from './providers'
 import { fromReadableAmount } from './conversion'
+import {camelCaseKeys} from "./trading";
+import  {ILiquidity} from './interfaces/liquidity'
+import  {IToken} from './interfaces/token'
+import  {IPosition} from './interfaces/position'
+import axios from 'axios';
+import INonfungiblePositionManager from './Nonfungible.json'
+import IV3PoolABI from "./IV3Pool.json";
+import IV3FactoryABI from "./V3Factory.json";
+
+ const swrFetcher = async (url: string, options: any) => {
+  const { method, data, ...rest } = options;
+
+  try {
+    const response = await axios.request({ url, method, data, ...rest });
+
+    return camelCaseKeys(response?.data?.data || response?.data?.result);
+  } catch (error) {
+    throw new Error( 'Something went wrong');
+  }
+};
+
+
+export const getListLiquidity = async (
+    address?: string
+): Promise<ILiquidity[]> => {
+  const qs = `?limit=100&network=nos&page=1&address=${address}`
+  return swrFetcher(`${CurrentConfig.API_ROOT}/api/swap/pair/apr/list${qs}`, {
+    method: 'GET',
+    error: 'Fail to get list liquidity',
+  });
+};
+
+//TODO:  add type
+export const getTokens = async (limit:any): Promise<IToken[]> => {
+  return swrFetcher(`${CurrentConfig.API_ROOT}/api/token-explorer/tokens?limit=${limit.toString()}&network=nos&page=1`, {
+    method: 'GET',
+    error: 'Fail to get tokens data',
+  });
+};
+
+export const getPositionDetail = async (
+    id: number
+): Promise<IPosition> => {
+  return swrFetcher(`${CurrentConfig.API_ROOT}/api/swap-v3/pool/user-position/${id}`, {
+    method: 'GET',
+    error: 'Fail to get list user positions',
+  });
+};
+
 
 export interface PositionInfo {
   tickLower: number
@@ -488,6 +537,105 @@ export async function mintPosition(): Promise<TransactionState> {
   }
 
   return sendTransaction(transaction)
+}
+
+export async function getEarnedFee(tokenId:any): Promise<any> {
+  let walletAddress = getWalletAddress()
+  if (!walletAddress && CurrentWallet.type === WalletType.EXTENSION) {
+    walletAddress = await geSignerAddress()
+  }
+  const provider = getProvider()
+  if (!provider || !walletAddress) {
+    throw new Error('No provider or address')
+  }
+  const quoteContract = new ethers.Contract(
+      CurrentConfig.NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+      INonfungiblePositionManager,
+      provider
+  )
+
+  const transaction = await quoteContract
+      .connect(provider)
+      .callStatic
+      .collect({
+            tokenId:tokenId,
+            recipient: walletAddress,
+            amount0Max: MaxUint128,
+            amount1Max: MaxUint128,
+          }
+      );
+
+  return [
+    transaction.amount0.toString(),
+    transaction.amount1.toString(),
+  ]
+}
+
+export async function getPoolAddress(token0:any,token1:any,fee:any): Promise<any> {
+  let walletAddress = getWalletAddress()
+  if (!walletAddress && CurrentWallet.type === WalletType.EXTENSION) {
+    walletAddress = await geSignerAddress()
+  }
+  const provider = getProvider()
+  if (!provider || !walletAddress) {
+    throw new Error('No provider or address')
+  }
+  const factoryContract = new ethers.Contract(
+      CurrentConfig.POOL_FACTORY_CONTRACT_ADDRESS,
+      IV3FactoryABI,
+      provider
+  )
+
+  const transaction = await factoryContract
+      .connect(provider)
+      .callStatic
+      .getPool(token0,token1,fee);
+
+  return transaction
+}
+
+export async function getPoolFromAddress(poolAddress:any): Promise<any> {
+  let walletAddress = getWalletAddress()
+  if (!walletAddress && CurrentWallet.type === WalletType.EXTENSION) {
+    walletAddress = await geSignerAddress()
+  }
+  const provider = getProvider()
+  if (!provider || !walletAddress) {
+    throw new Error('No provider or address')
+  }
+  const poolContract = new ethers.Contract(
+      poolAddress,
+      IV3PoolABI.abi,
+      provider
+  )
+
+  const contract = await poolContract
+      .connect(provider);
+
+  return contract
+}
+
+export async function getPositionImage(tokenId:any): Promise<any> {
+  let walletAddress = getWalletAddress()
+  if (!walletAddress && CurrentWallet.type === WalletType.EXTENSION) {
+    walletAddress = await geSignerAddress()
+  }
+  const provider = getProvider()
+  if (!provider || !walletAddress) {
+    throw new Error('No provider or address')
+  }
+  const quoteContract = new ethers.Contract(
+      CurrentConfig.NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+      INonfungiblePositionManager,
+      provider
+  )
+
+  const transaction = await quoteContract
+      .connect(provider)
+      .callStatic
+      .tokenURI(tokenId);
+
+  return transaction
 }
 
 

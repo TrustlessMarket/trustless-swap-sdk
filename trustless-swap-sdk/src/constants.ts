@@ -1,4 +1,5 @@
 import JSBI from 'jsbi'
+import { BigNumber } from 'ethers';
 
 // exports for external consumption
 export type BigintIsh = JSBI | string | number
@@ -15,6 +16,7 @@ export enum Rounding {
 }
 
 export const MaxUint256 = JSBI.BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
+export const MaxUint128 = BigNumber.from(2).pow(128).sub(1);
 export enum FeeAmount {
   LOWEST = 100,
   LOW = 500,

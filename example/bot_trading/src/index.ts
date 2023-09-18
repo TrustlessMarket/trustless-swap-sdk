@@ -36,12 +36,6 @@ class Foo {
              this.cronJob.start();
          }
     }
-   /*
-    async init() {
-        refreshProvider()
-        changeWallet("0x3B6c50437765f996A609eA479766141BB7903761", "")
-
-    }*/
 
     cronTrade = async (): Promise<void> => {
         const trade1 = await createTrade(true)

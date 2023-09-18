@@ -65,14 +65,12 @@ export async function getPoolInfo(tokenIn: Token,tokenOut:Token,poolFee:number )
   if (!provider) {
     throw new Error('No provider')
   }
-  console.log("vao day 4")
   const currentPoolAddress = computePoolAddress({
     factoryAddress:CurrentConfig.POOL_FACTORY_CONTRACT_ADDRESS,
     tokenA: tokenIn,
     tokenB: tokenOut,
     fee: poolFee
   })
-  console.log("vao day 7")
   console.log("param",{
     factoryAddress:CurrentConfig.POOL_FACTORY_CONTRACT_ADDRESS,
     tokenA: tokenIn,

@@ -62,7 +62,7 @@ export const testnetConfig: EnvironmentConfig = {
 export const mainnetConfig: EnvironmentConfig = {
     env: Environment.MAINNET,
     rpc:'https://node.l2.trustless.computer',
-    API_ROOT:"https://www.fprotocol.io",
+    API_ROOT:"https://dex-api.fprotocol.io",
     POOL_FACTORY_CONTRACT_ADDRESS:'0x1d12AC81710da54A50e2e9095E20dB2D915Ce3C8',
     QUOTER_CONTRACT_ADDRESS:'0x17f8275c3842f977d42Ab09c35042ddE4ec55856',
     SWAP_ROUTER_ADDRESS:'0xB3eAc9358462356B231801309f553c48667B2CB7',
