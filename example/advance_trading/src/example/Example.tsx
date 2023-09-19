@@ -7,8 +7,8 @@ import { CurrentConfig, Environment,WalletType,setTOkenSwap,setTOkenIn,setTOkenO
     connectBrowserExtensionWallet,
     getProvider,
     getWalletAddress,
-    TransactionState,
-    refreshProvider, createTrade, executeTrade, TokenTrade,setTokens,gettokenIndex,
+    TransactionState,executeTradeSlippage,
+    refreshProvider, createTrade, TokenTrade,setTokens,gettokenIndex,
     displayTrade,choiceConFig,getCurrencyBalance,getBestRouteExactIn,
 } from 'trustless-swap-sdk'
 import Select from 'react-select';
@@ -37,7 +37,7 @@ let select2= ""
 
  // refreshProvider()
     choiceConFig(Environment.MAINNET)
-    //changeWallet(WalletType.PRIVATEKEY,"0x3B6c50437765f996A609eA479766141BB7903761","c46e21b81b8b70e0fdcbd537a9dd52fccd86a116ea2e998b2163ba51cd3c9bc4")
+    //changeWallet(WalletType.PRIVATEKEY,"0x3B6c50437765f996A609eA479766141BB7903761","")
     changeWallet(WalletType.EXTENSION,"","")
     refreshProvider(null)
   setTOkenSwap(CurrentConfig.tokens_list[0],1,CurrentConfig.tokens_list[2],10000)
@@ -70,13 +70,7 @@ const getList = async () => {
 
 
 getList()
-/*
-import { CurrentConfig, Environment } from '../config'
-import { connectBrowserExtensionWallet, getProvider, getWalletAddress, TransactionState } from '../libs/providers'
-import { createTrade, executeTrade, TokenTrade } from '../libs/trading'
-import { displayTrade } from '../libs/utils'
-import { getCurrencyBalance, wrapETH } from '../libs/wallet'
-*/
+
 
 
 const useOnBlockUpdated = (callback: (blockNumber: number) => void) => {
@@ -218,7 +212,8 @@ console.log("tokenSwap.in",tokenSwap.in)
   const onTrade = useCallback(async (trade: TokenTrade | undefined) => {
       const values = getValues();
       if (trade) {
-      setTxState(await executeTrade(trade))
+          const rs = await executeTradeSlippage(trade,50)
+      setTxState(rs[0])
     }
   }, [])
 
