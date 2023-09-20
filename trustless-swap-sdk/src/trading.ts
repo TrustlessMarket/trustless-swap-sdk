@@ -216,7 +216,7 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
   console.log("res",res)
   const result = Math.max(...res);
   const indexBestRoute = res.indexOf(result);
-  const bestRoute = swapRoutes[indexBestRoute];
+  const bestRoute = swapRoutes1[indexBestRoute];
 
   for (var pair of bestRoute.pathPairs) {
 
@@ -335,7 +335,7 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
     console.log("res",res)
     const result = Math.min(...res);
     const indexBestRoute = res.indexOf(result);
-    const bestRoute = swapRoutes[indexBestRoute];
+    const bestRoute = swapRoutes1[indexBestRoute];
 
     for (var pair of bestRoute.pathPairs) {
 
@@ -472,7 +472,8 @@ export async function createTrade(): Promise<TokenTrade> {
 
 export async function executeTradeSlippage(
     trade: TokenTrade,
-    slippage: number
+    slippage: number,
+    recipient:any = null,
 ): Promise<any> {
 
   let walletAddress = getWalletAddress()
@@ -492,11 +493,12 @@ export async function executeTradeSlippage(
     return TransactionState.Failed
   }
  */
+  recipient =recipient!=null&&recipient!=""?recipient:walletAddress
 
   const options: SwapOptions = {
     slippageTolerance: new Percent(slippage, 10_000), // 50 bips, or 0.50%
     deadline: Math.floor(Date.now() / 1000) + 60 * 20, // 20 minutes from the current Unix time
-    recipient: walletAddress,
+    recipient: recipient,
   }
   const methodParameters = SwapRouter.swapCallParameters([trade], options)
   const tx = {

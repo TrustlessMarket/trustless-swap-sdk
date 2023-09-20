@@ -4,7 +4,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.1.163",
+  "version": "0.1.165",
   "description": "⚒️ An SDK for building applications on top of trustless swap",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

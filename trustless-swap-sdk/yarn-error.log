@@ -1,0 +1,79 @@
+Arguments: 
+  /usr/local/bin/node /usr/local/Cellar/yarn/1.22.19/libexec/bin/yarn.js install
+
+PATH: 
+  /Library/Frameworks/Python.framework/Versions/3.11/bin:/Users/tuan/.cargo/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/Users/tuan/WebstormProjects/trustless-swap-sdk/node_modules/.bin:/Users/tuan/.foundry/bin:/Users/tuan/.foundry/bin
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  16.15.0
+
+Platform: 
+  darwin x64
+
+Trace: 
+  Error: getaddrinfo ENOTFOUND registry.yarnpkg.com
+      at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:71:26)
+
+npm manifest: 
+  {
+    "name": "trustless-swap-sdk",
+    "license": "MIT",
+    "publishConfig": {
+      "access": "public"
+    },
+    "version": "0.1.108",
+    "description": "⚒️ An SDK for building applications on top of trustless swap",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "files": [
+      "dist"
+    ],
+    "repository": "https://github.com/TrustlessMarket/trustless-swap-sdk",
+    "keywords": [
+      "ethereum, newbitcoincity, swap"
+    ],
+    "module": "dist/strustless-swap-sdk.esm.js",
+    "scripts": {
+      "build": "tsdx build",
+      "start": "tsdx watch",
+      "test": "tsdx test",
+      "prepublishOnly": "tsdx build"
+    },
+    "dependencies": {
+      "@ethersproject/abi": "^5.0.12",
+      "@ethersproject/solidity": "^5.0.9",
+      "big-number": "^2.0.0",
+      "big.js": "^5.2.2",
+      "decimal.js-light": "^2.5.0",
+      "ethers": "^5.7.2",
+      "jsbi": "^3.1.4",
+      "query-string": "^8.1.0",
+      "tiny-invariant": "^1.1.0",
+      "tiny-warning": "^1.0.3",
+      "toformat": "^2.0.0",
+      "user": "^0.0.0"
+    },
+    "devDependencies": {
+      "@types/big.js": "^4.0.5",
+      "@types/jest": "^24.0.25",
+      "@types/whatwg-fetch": "^0.0.33",
+      "tsdx": "^0.14.1"
+    },
+    "engines": {
+      "node": ">=10"
+    },
+    "prettier": {
+      "printWidth": 120,
+      "semi": false,
+      "singleQuote": true
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
