@@ -21,7 +21,6 @@ export interface EnvironmentConfig {
   QUOTER_CONTRACT_ADDRESS:string
   SWAP_ROUTER_ADDRESS:string
   WETH_CONTRACT_ADDRESS:string
-  NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS:string
   tokens_list: Array<Token>
 }
 
@@ -34,7 +33,6 @@ export const testnetConfig: EnvironmentConfig = {
   QUOTER_CONTRACT_ADDRESS:'0xD228465a3E1C64Ed6C627a87132dc6b1552cd0F2',
   SWAP_ROUTER_ADDRESS:'0x3a3885F7a03beC1F4A1c00f155A5d57168fDE205',
   WETH_CONTRACT_ADDRESS:'0x0fba66555b74f13809862bd6f15fffa0a0237059',
-  NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS:'0xe6Dc33d13200f0A9CF7cFC7B484aE1891D934234',
   tokens_list:[
     new Token(
         1,
@@ -65,7 +63,6 @@ export const mainnetConfig: EnvironmentConfig = {
   QUOTER_CONTRACT_ADDRESS:'0x17f8275c3842f977d42Ab09c35042ddE4ec55856',
   SWAP_ROUTER_ADDRESS:'0xB3eAc9358462356B231801309f553c48667B2CB7',
   WETH_CONTRACT_ADDRESS:'0x43bda480de297a14cec95bfb1c6a313615f809ef',
-  NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS:'0xe6Dc33d13200f0A9CF7cFC7B484aE1891D934234',
   tokens_list:[
     new Token(
         1,
@@ -97,16 +94,6 @@ in: CurrentConfig.tokens_list[0],
       amountIn: 1,
       out: CurrentConfig.tokens_list[1],
       poolFee: FeeAmount.MEDIUM,
-}
-
-export let tokenPosition = {
-  token0: CurrentConfig.tokens_list[0],
-  token0Amount: 1,
-  token1: CurrentConfig.tokens_list[1],
-  token1Amount: 1,
-  poolFee: FeeAmount.MEDIUM,
-  token0AmountToCollect: 1,
-  token1AmountToCollect: 1,
 }
 export function setTOkenSwap(inputToken: Token,amountIn: number,outToken: Token, poolFee:number)  {
   tokenSwap ={
