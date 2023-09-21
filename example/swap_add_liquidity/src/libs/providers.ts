@@ -45,6 +45,9 @@ export function getProvider(): providers.Provider | null {
 }
 
 export function getWalletAddress(): string | null {
+  console.log("tuan hm")
+  console.log( CurrentWallet.type)
+  console.log( walletExtensionAddress)
   return CurrentWallet.type===  WalletType.EXTENSION
       ? walletExtensionAddress
       : wallet.address
@@ -77,6 +80,8 @@ export async function connectBrowserExtensionWallet() {
   }
   
   walletExtensionAddress = accounts[0]
+  console.log("accounts")
+  console.log(walletExtensionAddress)
   return walletExtensionAddress
 }
 
@@ -112,6 +117,8 @@ async function sendTransactionViaExtension(
       return TransactionState.Failed
     }
   } catch (e) {
+    console.log("tuanhm 8")
+    console.log(e)
     return TransactionState.Rejected
   }
 }
