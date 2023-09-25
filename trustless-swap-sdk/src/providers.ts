@@ -84,7 +84,7 @@ export async function sendTransaction(
 }
 
 export async function sendTransactionGetReceipt(
-    transaction: ethers.providers.TransactionRequest,scanTX:any
+    transaction: ethers.providers.TransactionRequest,scanTX:any = true
 ): Promise<any> {
   if (CurrentWallet.type===  WalletType.EXTENSION) {
     transaction.maxFeePerGas = transaction.maxFeePerGas?.toString()
