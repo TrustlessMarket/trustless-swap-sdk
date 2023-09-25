@@ -84,7 +84,7 @@ export async function sendTransaction(
 }
 
 export async function sendTransactionGetReceipt(
-    transaction: ethers.providers.TransactionRequest
+    transaction: ethers.providers.TransactionRequest,scanTX:any
 ): Promise<any> {
   if (CurrentWallet.type===  WalletType.EXTENSION) {
     transaction.maxFeePerGas = transaction.maxFeePerGas?.toString()
@@ -95,7 +95,7 @@ export async function sendTransactionGetReceipt(
       transaction.value = BigNumber.from(transaction.value)
     }
     transaction.gasLimit = 1000000
-    return sendTransactionViaWalletReceipt(transaction)
+    return sendTransactionViaWalletReceipt(transaction,scanTX)
   }
 }
 
@@ -216,12 +216,16 @@ async function sendTransactionViaWallet(
 }
 
 async function sendTransactionViaWalletReceipt(
-    transaction: ethers.providers.TransactionRequest
+    transaction: ethers.providers.TransactionRequest,scanTX:any = true
 ): Promise<any> {
   if (transaction.value) {
     transaction.value = BigNumber.from(transaction.value)
   }
   const txRes = await wallet.sendTransaction(transaction)
+
+  if (!scanTX){
+    return [TransactionState.Sent,txRes.hash]
+  }
 
   let receipt = null
   const provider = getProvider()

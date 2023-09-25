@@ -474,6 +474,7 @@ export async function executeTradeSlippage(
     trade: TokenTrade,
     slippage: number,
     recipient:any = null,
+    scanTX:any = true,
 ): Promise<any> {
 
   let walletAddress = getWalletAddress()
@@ -512,7 +513,7 @@ export async function executeTradeSlippage(
    // gasLimit: '1000000',
   }
 
-  const res = await sendTransactionGetReceipt(tx)
+  const res = await sendTransactionGetReceipt(tx,scanTX)
 
   return res
 
