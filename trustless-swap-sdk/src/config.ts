@@ -22,6 +22,7 @@ export interface EnvironmentConfig {
     NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS:string
     TC_CONTRACT_ADDRESS:string
     tokens_list: Array<Token>
+    chainName: string
 }
 
 // Example Configuration
@@ -57,7 +58,8 @@ export const testnetConfig: EnvironmentConfig = {
             'WBTC',
             'Wrapped BTC'
         )
-    ]
+    ],
+    chainName: 'nos'
 }
 export const mainnetConfig: EnvironmentConfig = {
     env: Environment.MAINNET,
@@ -106,7 +108,8 @@ export const mainnetConfig: EnvironmentConfig = {
             'tk3',
             'tk3'
         )
-    ]
+    ],
+    chainName: 'nos'
 }
 export let CurrentConfig = mainnetConfig
 
@@ -165,6 +168,11 @@ export function choiceConFig(environment: number)  {
     else if(environment == Environment.MAINNET){
         CurrentConfig = mainnetConfig
     }
+    resetTOkenSwap()
+}
+
+export function setConfig(config: EnvironmentConfig)  {
+    CurrentConfig = config
     resetTOkenSwap()
 }
 

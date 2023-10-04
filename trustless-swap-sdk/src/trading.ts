@@ -165,7 +165,7 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
     const params: ISwapRouteParams = {
       from_token: tokenSwap.in.address,
       to_token: tokenSwap.out.address,
-      network: "nos"
+      network: CurrentConfig.chainName || "nos"
     };
     swapRoutes = await getSwapRoutesV2(params);
   }
@@ -175,7 +175,7 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
       limit: 500,
       page: 1,
       is_test: CurrentConfig.env == Environment.TESTNET ? '1' : '',
-      network:  "nos",
+      network:  CurrentConfig.chainName || "nos",
     });
 
     listToken1 = res ? camelCaseKeys(res) : [];
@@ -291,7 +291,7 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
       const params: ISwapRouteParams = {
         from_token: tokenSwap.in.address,
         to_token: tokenSwap.out.address,
-        network: "nos"
+        network: CurrentConfig.chainName || "nos"
       };
       swapRoutes = await getSwapRoutesV2(params);
     }
@@ -301,7 +301,7 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
         limit: 500,
         page: 1,
         is_test: CurrentConfig.env == Environment.TESTNET ? '1' : '',
-        network:  "nos",
+        network:  CurrentConfig.chainName || "nos",
       });
 
       listToken1 = res ? camelCaseKeys(res) : [];
