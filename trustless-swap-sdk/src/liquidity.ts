@@ -44,7 +44,7 @@ import IV3FactoryABI from "./V3Factory.json";
 export const getListLiquidity = async (
     address?: string
 ): Promise<ILiquidity[]> => {
-  const qs = `?limit=100&network=nos&page=1&address=${address}`
+  const qs = `?limit=100&network=${CurrentConfig.chainName}&page=1&address=${address}`
   return swrFetcher(`${CurrentConfig.API_ROOT}/api/swap/pair/apr/list${qs}`, {
     method: 'GET',
     error: 'Fail to get list liquidity',
@@ -53,7 +53,7 @@ export const getListLiquidity = async (
 
 //TODO:  add type
 export const getTokens = async (limit:any): Promise<IToken[]> => {
-  return swrFetcher(`${CurrentConfig.API_ROOT}/api/token-explorer/tokens?limit=${limit.toString()}&network=nos&page=1`, {
+  return swrFetcher(`${CurrentConfig.API_ROOT}/api/token-explorer/tokens?limit=${limit.toString()}&network=${CurrentConfig.chainName}&page=1`, {
     method: 'GET',
     error: 'Fail to get tokens data',
   });

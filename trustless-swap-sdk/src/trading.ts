@@ -85,7 +85,7 @@ export async function getListRoute(from:string,to:string): Promise<any[]>{
   let listrs =[]
   try {
     const res = await fetch(
-        CurrentConfig.API_ROOT+`/api/swap/token/route/v2?network=nos&from_token=`+from+'&to_token='+to,
+        CurrentConfig.API_ROOT+`/api/swap/token/route/v2?network=${CurrentConfig.chainName}&from_token=`+from+'&to_token='+to,
     ).then((res:any) => {
       return res.json();
     });
