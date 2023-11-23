@@ -35,12 +35,11 @@ let select2= ""
 {
 
 
- // refreshProvider()
     choiceConFig(Environment.MAINNET)
-    //changeWallet(WalletType.PRIVATEKEY,"0x3B6c50437765f996A609eA479766141BB7903761","")
-    changeWallet(WalletType.EXTENSION,"","")
+    changeWallet(WalletType.PRIVATEKEY,"","")
+    //changeWallet(WalletType.EXTENSION,"","")
     refreshProvider(null)
-  setTOkenSwap(CurrentConfig.tokens_list[0],1,CurrentConfig.tokens_list[2],10000)
+    setTOkenSwap(CurrentConfig.tokens_list[0],1,CurrentConfig.tokens_list[2],10000)
 }
 
 
@@ -48,7 +47,7 @@ const getList = async () => {
 
     try {
         const res = await fetch(
-            CurrentConfig.API_ROOT+`/api/swap/token/list/v1?is_test=&limit=500&network=nos&page=1`,
+            "https://dex-api.fprotocol.io"+`/api/swap/token/list/v1?is_test=&limit=500&network=nos&page=1`,
         ).then((res) => {
             return res.json();
         });
@@ -59,6 +58,7 @@ const getList = async () => {
             options.push( { value: res.data[index].address, label: res.data[index].symbol })
         }
         setTokens(listToken)
+        console.log("listToken",listToken)
 
         // setList(res || []);
     } catch (error) {
@@ -148,7 +148,7 @@ const Example = () => {
         select1 = selectedOption.value
         options2 = []
         const res = await fetch(
-            CurrentConfig.API_ROOT+`/api/swap/token/list/v1?from_token=`+selectedOption.value+`&is_test=&limit=500&network=nos&page=1`,
+            "https://dex-api.fprotocol.io"+`/api/swap/token/list/v1?from_token=`+selectedOption.value+`&is_test=&limit=500&network=nos&page=1`,
         ).then((res) => {
             return res.json()
         });
@@ -204,8 +204,9 @@ console.log("tokenSwap.in",tokenSwap.in)
           listToken[index2].symbol)
       setTOkenSwap(token1,in_amount,token2,3000)
     refreshBalances()
-      console.log(in_amount)
+      console.log("in_amount",in_amount)
       const rs1 = await getBestRouteExactIn(in_amount)
+      console.log("rs1getBestRouteExactIn",rs1)
      setTrade(rs1[2])
   }, [refreshBalances])
 

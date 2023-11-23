@@ -160,7 +160,7 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
   let  listPools:any[] =[]
 
 
-  if(swapRoutes == null || swapRoutes.length==0)
+  if( swapRoutes.length==0)
   {
     const params: ISwapRouteParams = {
       from_token: tokenSwap.in.address,
@@ -193,33 +193,33 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
   const promises = swapRoutes1.map(async (route: any) => {
     const addresses = route?.pathTokens?.map((token: IToken) => token.address);
     const fees = route?.pathPairs?.map((pair: any) => Number(pair.fee));
-    //console.log("route?.pathPairs",route?.pathPairs);
-    /*
-    if(route?.pathPairs.length>0 && Number(route?.pathPairs[0].reserve0)<0.000001 && Number(route?.pathPairs[0].reserve1)<0.000001)
-    {
-      return 0;
-    }
-     */
-    const transaction = await quoteContract
-        .connect(provider)
-        .callStatic
-        .quoteExactInput(
-            encodePath(addresses, fees),
-            ethers.utils.parseEther(amountIn.toString())
-        );
+    try {
+      const transaction = await quoteContract
+          .connect(provider)
+          .callStatic
+          .quoteExactInput(
+              encodePath(addresses, fees),
+              ethers.utils.parseEther(amountIn.toString())
+          );
 
-    return Number(transaction.amountOut.toString());
+      return Number(transaction.amountOut.toString());
+
+    } catch (e) {
+      console.log("quoteExactIn error route,addresses,fees, encodePath(addresses, fees),ethers.utils.parseEther(amountIn.toString()),e",route,addresses,fees, encodePath(addresses, fees),ethers.utils.parseEther(amountIn.toString()),e)
+    }
+    return 0
   });
 
 
   const res:number[] = await Promise.all(promises);
   console.log("res",res)
   const result = Math.max(...res);
+    if(result==0){
+      return [-1]
+    }
   const indexBestRoute = res.indexOf(result);
   const bestRoute = swapRoutes1[indexBestRoute];
-
   for (var pair of bestRoute.pathPairs) {
-
     const index0 = gettokenIndex(listToken1,pair.token0)
     const token0 = new Token(
         1,
@@ -244,7 +244,6 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
       tokenSwap.out
   )
 
-
   const uncheckedTrade = Trade.createUncheckedTrade({
     route: swapRout1,
     inputAmount: CurrencyAmount.fromRawAmount(
@@ -263,7 +262,7 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
 
   return [result,bestRoute,uncheckedTrade,result.toLocaleString('fullwide', {useGrouping:false}) ]
   } catch (error) {
-
+    console.log("quoteExactInput Exception all",error)
   } finally {
 
   }
@@ -317,26 +316,23 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
     }
 
     const promises = swapRoutes1.map(async (route: any) => {
+      let addresses = route?.pathTokens?.map((token: IToken) => token.address);
+      let fees = route?.pathPairs?.map((pair: any) => Number(pair.fee));
+      addresses = addresses.reverse()
+      fees = fees.reverse()
       try {
-        let addresses = route?.pathTokens?.map((token: IToken) => token.address);
-        let fees = route?.pathPairs?.map((pair: any) => Number(pair.fee));
-        addresses = addresses.reverse()
-        fees = fees.reverse()
-        console.log("quoteExactOutput pathPairs",route?.pathPairs)
-        console.log("quoteExactOutput fees",fees)
-        console.log("quoteExactOutput params1",addresses,fees, encodePath(addresses, fees),ethers.utils.parseEther(amountOut.toString()))
         const transaction = await quoteContract
             .connect(provider)
             .callStatic
             .quoteExactOutput(
-                encodePath(addresses, fees),
+                encodePath(addresses,fees),
                 ethers.utils.parseEther(amountOut.toString())
             );
 
         return Number(transaction.amountIn.toString());
 
       } catch (e) {
-        console.log("quoteExactOutput Exception",e)
+        console.log("quoteExactOutput error route,addresses,fees, encodePath(addresses, fees),ethers.utils.parseEther(amountIn.toString()),e",route,addresses,fees, encodePath(addresses, fees),ethers.utils.parseEther(amountOut.toString()),e)
       }
       return 0
     });
@@ -352,7 +348,6 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
     if (returnIndex == -1){
       return [returnIndex]
     }
-
     console.log("res",res)
     const result = res[returnIndex];
     const indexBestRoute = returnIndex;
@@ -404,7 +399,7 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
     return [result,bestRoute,uncheckedTrade]
 
   } catch (error) {
-    console.log(error)
+    console.log("getBestRouteExactOut all",error)
   } finally {
   }
   return [-1]

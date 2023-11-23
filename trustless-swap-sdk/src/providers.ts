@@ -46,14 +46,13 @@ export function getMainnetProvider(): BaseProvider {
 
 export function getProvider(): providers.Provider | null {
   return CurrentWallet.type === WalletType.EXTENSION
-      ? browserExtensionProvider
+      ? browserExtensionProvider:CurrentWallet.privateKey==""?mainnetProvider
       : wallet.provider
 }
 
 export function getWalletAddress(): string | null {
   return CurrentWallet.type===  WalletType.EXTENSION
-      ? walletExtensionAddress
-      : wallet.address
+      ? walletExtensionAddress:CurrentWallet.privateKey==""?"": wallet.address
 }
 
 export async function geSignerAddress(): Promise<string>{
