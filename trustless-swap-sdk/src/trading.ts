@@ -17,7 +17,7 @@ import {encodePath, getPoolInfoByToken} from './poolinfo'
 //import queryString from 'query-string';
 import {isEmpty,random} from 'lodash';
 import camelCase from 'lodash/camelCase'
-import {CurrentConfig, CurrentWallet, Environment, tokenSwap, WalletType,} from './config'
+import {CurrentConfig, CurrentWallet, tokenSwap, WalletType,} from './config'
 
 import {
   getProvider,
@@ -171,6 +171,7 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
   }
   if( listToken1.length==0)
   {
+    /*
     const res = await getSwapTokensV1({
       limit: 500,
       page: 1,
@@ -179,7 +180,7 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
     });
 
     listToken1 = res ? camelCaseKeys(res) : [];
-
+   */
   }
 
     let swapRoutes1 = []
@@ -201,7 +202,6 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
               encodePath(addresses, fees),
               ethers.utils.parseEther(amountIn.toString())
           );
-
       return Number(transaction.amountOut.toString());
 
     } catch (e) {
@@ -220,20 +220,20 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
   const indexBestRoute = res.indexOf(result);
   const bestRoute = swapRoutes1[indexBestRoute];
   for (var pair of bestRoute.pathPairs) {
-    const index0 = gettokenIndex(listToken1,pair.token0)
+    const index0 = gettokenIndex(bestRoute.pathTokens,pair.token0)
     const token0 = new Token(
         1,
-        listToken1[index0].address,
-       Number(listToken1[index0].decimal),
-        listToken1[index0].symbol,
-        listToken1[index0].symbol)
-    const index1 = gettokenIndex(listToken1,pair.token1)
+        bestRoute.pathTokens[index0].address,
+       Number(bestRoute.pathTokens[index0].decimal),
+        bestRoute.pathTokens[index0].symbol,
+        bestRoute.pathTokens[index0].name)
+    const index1 = gettokenIndex(bestRoute.pathTokens,pair.token1)
     const token1 = new Token(
         1,
-        listToken1[index1].address,
-        Number(listToken1[index1].decimal),
-        listToken1[index1].symbol,
-        listToken1[index1].symbol)
+        bestRoute.pathTokens[index1].address,
+        Number(bestRoute.pathTokens[index1].decimal),
+        bestRoute.pathTokens[index1].symbol,
+        bestRoute.pathTokens[index1].name)
     const p =await  getPoolInfoByToken( token0, token1,parseInt(pair.fee))
     listPools.push(p)
   }
@@ -297,6 +297,7 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
 
     if(listToken1.length==0)
     {
+      /*
       const res = await getSwapTokensV1({
         limit: 500,
         page: 1,
@@ -305,6 +306,7 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
       });
 
       listToken1 = res ? camelCaseKeys(res) : [];
+       */
 
     }
     let swapRoutes1 = []
@@ -355,20 +357,20 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
 
     for (let pair of bestRoute.pathPairs) {
 
-      const index0 = gettokenIndex(listToken1,pair.token0)
+      const index0 = gettokenIndex(bestRoute.pathTokens,pair.token0)
       const token0 = new Token(
           1,
-          listToken1[index0].address,
-          Number(listToken1[index0].decimal),
-          listToken1[index0].symbol,
-          listToken1[index0].symbol)
-      const index1 = gettokenIndex(listToken1,pair.token1)
+          bestRoute.pathTokens[index0].address,
+          Number(bestRoute.pathTokens[index0].decimal),
+          bestRoute.pathTokens[index0].symbol,
+          bestRoute.pathTokens[index0].name)
+      const index1 = gettokenIndex(bestRoute.pathTokens,pair.token1)
       const token1 = new Token(
           1,
-          listToken1[index1].address,
-          Number(listToken1[index1].decimal),
-          listToken1[index1].symbol,
-          listToken1[index1].symbol)
+          bestRoute.pathTokens[index1].address,
+          Number(bestRoute.pathTokens[index1].decimal),
+          bestRoute.pathTokens[index1].symbol,
+          bestRoute.pathTokens[index1].name)
       const p =await  getPoolInfoByToken(token0,token1,parseInt(pair.fee))
       listPools.push(p)
     }
