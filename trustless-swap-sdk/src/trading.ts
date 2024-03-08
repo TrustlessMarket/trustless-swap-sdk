@@ -1,13 +1,8 @@
 import {ethers} from 'ethers'
 import {SwapOptions, SwapRouter} from './entities/swapRouter'
+import {SwapOptionsNaka, SwapRouterNaka} from './entities/swapRouterNaka'
 import {Percent} from './entities/fractions/percent'
-import {
-  ERC20_ABI,
- // MAX_FEE_PER_GAS,
- // MAX_PRIORITY_FEE_PER_GAS,
-  TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER,
-  TradeType
-} from './constants'
+import {ERC20_ABI, TOKEN_AMOUNT_TO_APPROVE_FOR_TRANSFER, TradeType} from './constants'
 import {Token} from './entities/token'
 import {Trade} from './entities/trade'
 import {CurrencyAmount} from './entities/fractions/currencyAmount'
@@ -15,27 +10,24 @@ import {Route} from './entities/route'
 import JSBI from 'jsbi'
 import {encodePath, getPoolInfoByToken} from './poolinfo'
 //import queryString from 'query-string';
-import {isEmpty,random} from 'lodash';
+import {isEmpty, random} from 'lodash';
 import camelCase from 'lodash/camelCase'
-import {CurrentConfig, CurrentWallet, tokenSwap, WalletType,} from './config'
+import {CurrentConfig, CurrentWallet, tokenSwap, WalletType} from './config'
 
 import {
+  geSignerAddress,
   getProvider,
   getWalletAddress,
   sendTransaction,
   sendTransactionGetReceipt,
-  TransactionState,geSignerAddress
+  TransactionState
 } from './providers'
-import {
-  getCurrencyApproveRouter
-} from './wallet'
+import {getCurrencyApproveRouter} from './wallet'
 import {fromReadableAmount} from './utils1'
 import QuoterV2ABI from "./QuoterV2.json";
+import QuoterV2ABINaka from "./QuoterV2Naka.json";
 import axios from 'axios';
-import  {IToken} from './interfaces/token'
-
-
-
+import {IToken} from './interfaces/token'
 
 
 export interface IPagingParams {
@@ -129,7 +121,6 @@ export const getSwapRoutesV2 = async (params: any) => {
 
 let listToken:any[] = [
 ]
-
 export function  gettokenIndex(listToken :any[],address:string) {
   let position = -1
   for(let index = 0; index<listToken.length; index++) {
@@ -143,6 +134,173 @@ export function  gettokenIndex(listToken :any[],address:string) {
 
 
 export type TokenTrade = Trade<Token, Token, TradeType>
+export const reCheckRouteInSlippage= async function(amountIn: any, route: any, slippage: number, maxSlippage: number, oldNumber: number): Promise<any[]> {
+  const provider = getProvider()
+  if (!provider) {
+    throw new Error('No provider')
+  }
+  try {
+    const addresses = route?.pathTokens?.map((token: IToken) => token.address);
+    const fees = route?.pathPairs?.map((pair: any) => Number(pair.fee));
+    try {
+
+      const quoteContract = new ethers.Contract(
+            CurrentConfig.QUOTER_CONTRACT_ADDRESS,
+            QuoterV2ABI.abi,
+            provider
+        )
+      const transaction = await quoteContract
+          .connect(provider)
+          .callStatic
+          .quoteExactInput(
+              encodePath(addresses, fees),
+              ethers.utils.parseEther(amountIn.toString())
+          );
+     const out = Number(transaction.amountOut.toString());
+     if(out<oldNumber*(1.0-slippage/10000))
+     {
+       if(out>=oldNumber*(1.0-maxSlippage/10000)) {
+         let  listPools:any[] =[]
+         for (var pair of route.pathPairs){
+           const index0 = gettokenIndex(route.pathTokens,pair.token0)
+           const token0 = new Token(
+               1,
+               route.pathTokens[index0].address,
+               Number(route.pathTokens[index0].decimal),
+               route.pathTokens[index0].symbol,
+               route.pathTokens[index0].name)
+           const index1 = gettokenIndex(route.pathTokens,pair.token1)
+           const token1 = new Token(
+               1,
+               route.pathTokens[index1].address,
+               Number(route.pathTokens[index1].decimal),
+               route.pathTokens[index1].symbol,
+               route.pathTokens[index1].name)
+           const p =await  getPoolInfoByToken( token0, token1,parseInt(pair.fee))
+           listPools.push(p)
+         }
+
+         const swapRout1 = new Route(
+             listPools,
+             tokenSwap.in,
+             tokenSwap.out
+         )
+
+         const uncheckedTrade = Trade.createUncheckedTrade({
+           route: swapRout1,
+           inputAmount: CurrencyAmount.fromRawAmount(
+               tokenSwap.in,
+               fromReadableAmount(
+                   tokenSwap.amountIn,
+                   tokenSwap.in.decimals
+               ).toString()
+           ),
+           outputAmount: CurrencyAmount.fromRawAmount(
+               tokenSwap.out,
+               JSBI.BigInt(out)
+           ),
+           tradeType: TradeType.EXACT_INPUT,
+         })
+         return [true,uncheckedTrade]
+       }
+       return [true]
+     }else {
+       return [false]
+     }
+    } catch (e) {
+      console.log("reCheckRouteIn e",e)
+      return [true]
+    }
+  } catch (error) {
+    console.log("reCheckRouteIn all",error)
+    return [true]
+  } finally {
+  }
+}
+export const reCheckRouteOutSlippage= async function(amountOut: any, route: any, slippage: number, maxSlippage: number, oldNumber: number): Promise<any[]> {
+  const provider = getProvider()
+  if (!provider) {
+    throw new Error('No provider')
+  }
+  try {
+    let addresses = route?.pathTokens?.map((token: IToken) => token.address);
+    let fees = route?.pathPairs?.map((pair: any) => Number(pair.fee));
+    addresses = addresses.reverse()
+    fees = fees.reverse()
+    try {
+      const quoteContract = new ethers.Contract(
+          CurrentConfig.QUOTER_CONTRACT_ADDRESS,
+          QuoterV2ABI.abi,
+          provider
+      )
+      const transaction = await quoteContract
+          .connect(provider)
+          .callStatic
+          .quoteExactOutput(
+              encodePath(addresses,fees),
+              ethers.utils.parseEther(amountOut.toString())
+          );
+      const input = Number(transaction.amountIn.toString())
+      if(input>oldNumber*1.0/(1.0-slippage/10000))
+      {
+        if(input<=oldNumber/(1.0-maxSlippage/10000)) {
+          let  listPools:any[] =[]
+          for (var pair of route.pathPairs){
+            const index0 = gettokenIndex(route.pathTokens,pair.token0)
+            const token0 = new Token(
+                1,
+                route.pathTokens[index0].address,
+                Number(route.pathTokens[index0].decimal),
+                route.pathTokens[index0].symbol,
+                route.pathTokens[index0].name)
+            const index1 = gettokenIndex(route.pathTokens,pair.token1)
+            const token1 = new Token(
+                1,
+                route.pathTokens[index1].address,
+                Number(route.pathTokens[index1].decimal),
+                route.pathTokens[index1].symbol,
+                route.pathTokens[index1].name)
+            const p =await  getPoolInfoByToken( token0, token1,parseInt(pair.fee))
+            listPools.push(p)
+          }
+
+          const swapRout1 = new Route(
+              listPools,
+              tokenSwap.in,
+              tokenSwap.out
+          )
+
+          const uncheckedTrade = Trade.createUncheckedTrade({
+            route: swapRout1,
+            inputAmount: CurrencyAmount.fromRawAmount(
+                tokenSwap.in,
+                JSBI.BigInt(input),
+            ),
+            outputAmount: CurrencyAmount.fromRawAmount(
+                tokenSwap.out,
+                fromReadableAmount(
+                    amountOut,
+                    tokenSwap.in.decimals
+                ).toString()
+            ),
+            tradeType: TradeType.EXACT_OUTPUT,
+          })
+          return [true,uncheckedTrade]
+        }
+        return [true]
+      }else {
+        return [false]
+      }
+    } catch (e) {
+      console.log("reCheckRouteout e",e)
+      return [true]
+    }
+  } catch (error) {
+    console.log("reCheckRouteout all",error)
+    return [true]
+  } finally {
+  }
+}
 
 // Trading Functions
 
@@ -152,11 +310,11 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
   if (!provider) {
     throw new Error('No provider')
   }
-  const quoteContract = new ethers.Contract(
-      CurrentConfig.QUOTER_CONTRACT_ADDRESS,
-      QuoterV2ABI.abi,
-      provider
-  )
+    const quoteContract = new ethers.Contract(
+         CurrentConfig.QUOTER_CONTRACT_ADDRESS,
+         QuoterV2ABI.abi,
+         provider
+     )
   let  listPools:any[] =[]
 
 
@@ -165,7 +323,7 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
     const params: ISwapRouteParams = {
       from_token: tokenSwap.in.address,
       to_token: tokenSwap.out.address,
-      network: CurrentConfig.chainName || "nos"
+      network: CurrentConfig.network
     };
     swapRoutes = await getSwapRoutesV2(params);
   }
@@ -191,7 +349,7 @@ export const getBestRouteExactIn= async function(amountIn: any, swapRoutes: any[
       }
     }
 
-  const promises = swapRoutes1.map(async (route: any) => {
+    const promises = swapRoutes1.map(async (route: any) => {
     const addresses = route?.pathTokens?.map((token: IToken) => token.address);
     const fees = route?.pathPairs?.map((pair: any) => Number(pair.fee));
     try {
@@ -278,10 +436,10 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
       throw new Error('No provider')
     }
     const quoteContract = new ethers.Contract(
-        CurrentConfig.QUOTER_CONTRACT_ADDRESS,
-        QuoterV2ABI.abi,
-        provider
-    )
+          CurrentConfig.QUOTER_CONTRACT_ADDRESS,
+          QuoterV2ABI.abi,
+          provider
+      )
     let  listPools:any[] =[]
 
 
@@ -290,7 +448,7 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
       const params: ISwapRouteParams = {
         from_token: tokenSwap.in.address,
         to_token: tokenSwap.out.address,
-        network: CurrentConfig.chainName || "nos"
+        network: CurrentConfig.network
       };
       swapRoutes = await getSwapRoutesV2(params);
     }
@@ -408,6 +566,291 @@ export const getBestRouteExactOut= async function(amountOut: any, swapRoutes: an
 }
 
 
+export const getBestRouteExactInNaka= async function(amountIn: any,useDefiToken:any,
+                                                     swapRoutes: any[] = []): Promise<any[]> {
+  try {
+    const provider = getProvider()
+    if (!provider) {
+      throw new Error('No provider')
+    }
+    const quoteContract = new ethers.Contract(
+        CurrentConfig.QUOTER_CONTRACT_ADDRESS,
+        QuoterV2ABINaka.abi,
+        provider
+    )
+    let  listPools:any[] =[]
+    if( swapRoutes.length==0)
+    {
+      const params: ISwapRouteParams = {
+        from_token: tokenSwap.in.address,
+        to_token: tokenSwap.out.address,
+        network: CurrentConfig.network
+      };
+      swapRoutes = await getSwapRoutesV2(params);
+    }
+
+
+
+    let swapRoutes1 = []
+    for (var route of swapRoutes) {
+     // console.log("route swapRoutes",route)
+      if(route?.pathPairs.length>0 && (Number(route?.pathPairs[0].reserve0)>0.000001 || Number(route?.pathPairs[0].reserve1)>0.000001))
+      {
+        swapRoutes1.push(route)
+      }
+    }
+
+    const promises = swapRoutes1.map(async (route: any) => {
+      const addresses = route?.pathTokens?.map((token: IToken) => token.address);
+      const fees = route?.pathPairs?.map((pair: any) => Number(pair.fee));
+      try {
+        const transaction = await quoteContract
+            .connect(provider)
+            .callStatic
+            .quoteExactInput(
+                encodePath(addresses, fees),
+                ethers.utils.parseEther(amountIn.toString()),
+                useDefiToken
+            );
+        return [Number(transaction.amountOut.toString()),Number(transaction.amountDefi.toString())];
+
+      } catch (e) {
+        console.log("quoteExactIn error route,addresses,fees, encodePath(addresses, fees),ethers.utils.parseEther(amountIn.toString()),e",route,addresses,fees, encodePath(addresses, fees),ethers.utils.parseEther(amountIn.toString()),e)
+      }
+      return [0,0]
+    });
+
+
+    const res = await Promise.all(promises);
+   // console.log("result res",res)
+    //const result = Math.max(...res[0]);
+    let  result = 0
+    let indexBestRoute = -1;
+    for (let idx = 0;idx<res.length;idx++){
+      if(res[idx][0]> result){
+        indexBestRoute = idx;
+        result = res[idx][0]
+      }
+    }
+    if(result==0){
+      return [-1]
+    }
+    const bestRoute = swapRoutes1[indexBestRoute];
+    for (var pair of bestRoute.pathPairs) {
+      const index0 = gettokenIndex(bestRoute.pathTokens,pair.token0)
+      const token0 = new Token(
+          1,
+          bestRoute.pathTokens[index0].address,
+          Number(bestRoute.pathTokens[index0].decimal),
+          bestRoute.pathTokens[index0].symbol,
+          bestRoute.pathTokens[index0].name)
+      const index1 = gettokenIndex(bestRoute.pathTokens,pair.token1)
+      const token1 = new Token(
+          1,
+          bestRoute.pathTokens[index1].address,
+          Number(bestRoute.pathTokens[index1].decimal),
+          bestRoute.pathTokens[index1].symbol,
+          bestRoute.pathTokens[index1].name)
+      const p =await  getPoolInfoByToken( token0, token1,parseInt(pair.fee))
+      listPools.push(p)
+    }
+
+    const swapRout1 = new Route(
+        listPools,
+        tokenSwap.in,
+        tokenSwap.out
+    )
+
+    const uncheckedTrade = Trade.createUncheckedTrade({
+      route: swapRout1,
+      inputAmount: CurrencyAmount.fromRawAmount(
+          tokenSwap.in,
+          fromReadableAmount(
+              tokenSwap.amountIn,
+              tokenSwap.in.decimals
+          ).toString()
+      ),
+      outputAmount: CurrencyAmount.fromRawAmount(
+          tokenSwap.out,
+          JSBI.BigInt(result)
+      ),
+      tradeType: TradeType.EXACT_INPUT,
+    })
+   // console.log("result,bestRoute,uncheckedTrade,res[indexBestRoute][1] ]",result,bestRoute,uncheckedTrade,res[indexBestRoute][1])
+
+    return [result,bestRoute,uncheckedTrade,res[indexBestRoute][1] ]
+  } catch (error) {
+    console.log("quoteExactInput Exception all",error)
+  } finally {
+
+  }
+  return [-1]
+
+}
+
+export const getBestRouteExactOutNaka= async function(amountOut: any,useDefiToken:any, swapRoutes: any[] = []): Promise<any[]> {
+  try {
+
+    const provider = getProvider()
+    if (!provider) {
+      throw new Error('No provider')
+    }
+    const quoteContract = new ethers.Contract(
+        CurrentConfig.QUOTER_CONTRACT_ADDRESS,
+        QuoterV2ABINaka.abi,
+        provider
+    )
+    let  listPools:any[] =[]
+
+
+    if( swapRoutes.length==0)
+    {
+      const params: ISwapRouteParams = {
+        from_token: tokenSwap.in.address,
+        to_token: tokenSwap.out.address,
+        network: CurrentConfig.network
+      };
+      swapRoutes = await getSwapRoutesV2(params);
+    }
+
+    let swapRoutes1 = []
+    for (let route of swapRoutes) {
+      if(route?.pathPairs.length>0 && (Number(route?.pathPairs[0].reserve0)>0.000001 || Number(route?.pathPairs[0].reserve1)>0.000001))
+      {
+        swapRoutes1.push(route)
+      }
+    }
+
+    const promises = swapRoutes1.map(async (route: any) => {
+      let addresses = route?.pathTokens?.map((token: IToken) => token.address);
+      let fees = route?.pathPairs?.map((pair: any) => Number(pair.fee));
+      addresses = addresses.reverse()
+      fees = fees.reverse()
+      try {
+       // console.log("addresses,fees,amountOut,useDefiToken",addresses,fees,amountOut,useDefiToken)
+        const transaction = await quoteContract
+            .connect(provider)
+            .callStatic
+            .quoteExactOutput(
+                encodePath(addresses,fees),
+                ethers.utils.parseEther(amountOut.toString()),
+                useDefiToken
+            );
+
+        return [Number(transaction.amountIn.toString()),Number(transaction.amountDefi.toString())];
+
+      } catch (e) {
+        console.log("quoteExactOutput error route,addresses,fees, encodePath(addresses, fees),ethers.utils.parseEther(amountIn.toString()),e",route,addresses,fees, encodePath(addresses, fees),ethers.utils.parseEther(amountOut.toString()),e)
+      }
+      return [0,0]
+    });
+    const res = await Promise.all(promises);
+    let returnIndex = -1
+    res.forEach(function (value, index,arr) {
+      if(value[0]>0&&returnIndex==-1){
+        returnIndex =index
+      }else if(value[0]>0&&returnIndex>=0 &&value[0]<arr[returnIndex][0])   {
+        returnIndex =index
+      }
+    });
+    if (returnIndex == -1){
+      return [returnIndex]
+    }
+    const result = res[returnIndex];
+    const indexBestRoute = returnIndex;
+    const bestRoute = swapRoutes1[indexBestRoute];
+
+    for (let pair of bestRoute.pathPairs) {
+
+      const index0 = gettokenIndex(bestRoute.pathTokens,pair.token0)
+      const token0 = new Token(
+          1,
+          bestRoute.pathTokens[index0].address,
+          Number(bestRoute.pathTokens[index0].decimal),
+          bestRoute.pathTokens[index0].symbol,
+          bestRoute.pathTokens[index0].name)
+      const index1 = gettokenIndex(bestRoute.pathTokens,pair.token1)
+      const token1 = new Token(
+          1,
+          bestRoute.pathTokens[index1].address,
+          Number(bestRoute.pathTokens[index1].decimal),
+          bestRoute.pathTokens[index1].symbol,
+          bestRoute.pathTokens[index1].name)
+      const p =await  getPoolInfoByToken(token0,token1,parseInt(pair.fee))
+      listPools.push(p)
+    }
+
+    const swapRout1 = new Route(
+        listPools,
+        tokenSwap.in,
+        tokenSwap.out
+    )
+
+
+    const uncheckedTrade = Trade.createUncheckedTrade({
+      route: swapRout1,
+      inputAmount: CurrencyAmount.fromRawAmount(
+          tokenSwap.in,
+          JSBI.BigInt(result[0]),
+      ),
+      outputAmount: CurrencyAmount.fromRawAmount(
+          tokenSwap.out,
+          fromReadableAmount(
+              amountOut,
+              tokenSwap.in.decimals
+          ).toString()
+      ),
+      tradeType: TradeType.EXACT_OUTPUT,
+    })
+
+    return [result[0],bestRoute,uncheckedTrade,result[1]]
+
+  } catch (error) {
+    console.log("getBestRouteExactOut all",error)
+  } finally {
+  }
+  return [-1]
+}
+
+export async function executeTradeSlippageNaka(
+    trade: TokenTrade,
+    slippage: number,
+    useDefiToken: boolean,
+    recipient:any = null,
+    scanTX:any = true,
+): Promise<any> {
+
+  let walletAddress = getWalletAddress()
+  if (!walletAddress && CurrentWallet.type === WalletType.EXTENSION){
+    walletAddress =  await geSignerAddress()
+  }
+  if (!walletAddress ) {
+    throw new Error('Cannot execute a trade without a connected wallet')
+  }
+
+  recipient =recipient!=null&&recipient!=""?recipient:walletAddress
+
+  const options: SwapOptionsNaka = {
+    slippageTolerance: new Percent(slippage, 10_000), // 50 bips, or 0.50%
+    deadline: Math.floor(Date.now() / 1000) + 60 * 20, // 20 minutes from the current Unix time
+    recipient: recipient,
+    useDefiToken:useDefiToken,
+  }
+  const methodParameters = SwapRouterNaka.swapCallParameters([trade], options)
+  const tx = {
+    data: methodParameters.calldata,
+    to: CurrentConfig.SWAP_ROUTER_ADDRESS,
+    value: methodParameters.value,
+    from: walletAddress,
+    //maxFeePerGas: MAX_FEE_PER_GAS.toString(),
+    // maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS.toString(),
+    //  gasPrice: getGasFee(),
+    // gasLimit: '1000000',
+  }
+  const res = await sendTransactionGetReceipt(tx,scanTX)
+
+  return res
+}
 
 export async function createTrade(): Promise<TokenTrade> {
   const provider = getProvider()
@@ -415,10 +858,10 @@ export async function createTrade(): Promise<TokenTrade> {
     throw new Error('No provider')
   }
   const quoteContract = new ethers.Contract(
-      CurrentConfig.QUOTER_CONTRACT_ADDRESS,
-      QuoterV2ABI.abi,
-      provider
-  )
+        CurrentConfig.QUOTER_CONTRACT_ADDRESS,
+        QuoterV2ABI.abi,
+        provider
+    )
   const swapRoutes =await  getListRoute(tokenSwap.in.address, tokenSwap.out.address)
   let  listPools:any[] =[]
 
@@ -487,6 +930,58 @@ export async function createTrade(): Promise<TokenTrade> {
   return uncheckedTrade
 }
 
+export async function executeTradeAftercheckSlippage(
+    type:TradeType,
+    oldAmout: any,
+    expectAmout: any,
+    bestRoute: any,
+    trade: TokenTrade,
+    slippage: number,
+    maxSlippage: number,
+    recipient:any = null,
+    scanTX:any = true,
+): Promise<any> {
+  let newEstimate = undefined;
+  let newTrade = trade;
+  if(type == TradeType.EXACT_OUTPUT)
+  {
+    newEstimate = await reCheckRouteOutSlippage(expectAmout, bestRoute, slippage, maxSlippage, oldAmout)
+  }else {
+    newEstimate = await reCheckRouteInSlippage(expectAmout, bestRoute, slippage, maxSlippage, oldAmout)
+  }
+  if(newEstimate===[true]){
+    return [false]
+  }else if(newEstimate[0]==true && newEstimate.length==2){
+    newTrade = newEstimate[1]
+  }
+
+  let walletAddress = getWalletAddress()
+  if (!walletAddress && CurrentWallet.type === WalletType.EXTENSION){
+    walletAddress =  await geSignerAddress()
+  }
+  if (!walletAddress ) {
+    throw new Error('Cannot execute a trade without a connected wallet')
+  }
+
+  recipient =recipient!=null&&recipient!=""?recipient:walletAddress
+
+  const options: SwapOptions = {
+    slippageTolerance: new Percent(slippage, 10_000), // 50 bips, or 0.50%
+    deadline: Math.floor(Date.now() / 1000) + 60 * 20, // 20 minutes from the current Unix time
+    recipient: recipient,
+  }
+  const methodParameters = SwapRouter.swapCallParameters([newTrade], options)
+  const tx = {
+    data: methodParameters.calldata,
+    to: CurrentConfig.SWAP_ROUTER_ADDRESS,
+    value: methodParameters.value,
+    from: walletAddress,
+  }
+
+  const res = await sendTransactionGetReceipt(tx,scanTX)
+  return  [true,res]
+}
+
 export async function executeTradeSlippage(
     trade: TokenTrade,
     slippage: number,
@@ -502,15 +997,6 @@ export async function executeTradeSlippage(
     throw new Error('Cannot execute a trade without a connected wallet')
   }
 
-/*
-// Give approval to the router to spend the token
-  const tokenApproval = await getTokenTransferApproval(tokenSwap.in,Number(trade.inputAmount.toExact()))
-
-// Fail if transfer approvals do not go through
-  if (tokenApproval !== TransactionState.Sent) {
-    return TransactionState.Failed
-  }
- */
   recipient =recipient!=null&&recipient!=""?recipient:walletAddress
 
   const options: SwapOptions = {

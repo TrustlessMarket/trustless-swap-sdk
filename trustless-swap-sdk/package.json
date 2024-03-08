@@ -4,7 +4,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.1.182",
+  "version": "0.1.195",
   "description": "⚒️ An SDK for building applications on top of trustless swap",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -25,7 +25,7 @@
   "dependencies": {
     "@ethersproject/abi": "^5.0.12",
     "@ethersproject/solidity": "^5.0.9",
-    "big-number": "^2.0.0",
+    "bignumber.js": "^9.1.1",
     "big.js": "^5.2.2",
     "decimal.js-light": "^2.5.0",
     "ethers": "^5.7.2",

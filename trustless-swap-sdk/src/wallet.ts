@@ -5,7 +5,8 @@ import {BigNumber, ethers} from 'ethers'
 import {providers} from 'ethers'
 import JSBI from 'jsbi'
 
-import {CurrentConfig
+import {
+  CurrentConfig,
 } from './config'
 import {
   ERC20_ABI,
@@ -123,3 +124,193 @@ export async function unwrapETH(eth: number) {
 
   await sendTransaction(transaction)
 }
+
+/*
+export async function buyTCFee(need_amount_tc = '0.1', tokenType?: TokenType){
+  const tokenAddress =
+      tokenType === 'ETH' ? TOKEN_ADDRESS.ETH_ADDRESS_L2 : BTC_L2_ADDRESS;
+  let [tokenBuyPrice, chainNetwork, userAmountBTC] = await Promise.all([
+    this.getBTCPrice(),
+    this.gameWalletProvider.gameWallet?.provider.getNetwork(),
+    this.contract
+        .getERC20Contract(tokenAddress)
+        .connect(this.wallet)
+        .balanceOf(this.wallet.address),
+  ]);
+
+  if (tokenType === 'ETH') {
+    tokenBuyPrice = BigNumber.from('145000000000000000000');
+  }
+  const amountApprove = await this.contract
+      .getERC20Contract(tokenAddress)
+      .allowance(this.wallet.address, ALPHA_KEY_FACTORY_ADDRESS);
+  if (BigNumber.from(amountApprove).lt(parseEther('1'))) {
+    const txApprove = await this.contract
+        .getERC20Contract(tokenAddress)
+        .connect(this.wallet)
+        .approve(ALPHA_KEY_FACTORY_ADDRESS, ethers.constants.MaxUint256);
+    await txApprove.wait();
+  }
+
+  const estimateBTCAmount = parseEther(need_amount_tc)
+      .mul(parseEther(tokenType === 'ETH' ? '0.1' : '1'))
+      .div(tokenBuyPrice);
+
+  let amountBTC = estimateBTCAmount;
+
+  if (BigNumber.from(estimateBTCAmount).gt(userAmountBTC)) {
+    amountBTC = BigNumber.from(userAmountBTC).gt(estimateBTCAmount)
+        ? amountBTC
+        : userAmountBTC;
+  }
+
+  try {
+    const akf = this.contract.getAlphaKeysFactoryContract();
+    const nonce = BigNumber.from(ethers.utils.randomBytes(32));
+
+    const chainId = chainNetwork?.chainId as number;
+
+    const messagePack = ethers.utils.defaultAbiCoder.encode(
+        [
+          'address',
+          'uint256',
+          'uint256',
+          'address',
+          'uint256',
+          'uint256',
+          'uint256',
+        ],
+        [
+          akf.address,
+          chainId,
+          nonce,
+          this.wallet.address,
+          amountBTC,
+          tokenBuyPrice,
+          ethers.constants.MaxUint256,
+        ]
+    );
+
+    const messageHash = ethers.utils.keccak256(
+        ethers.utils.arrayify(messagePack)
+    );
+    const signature = await this.wallet.signMessage(
+        ethers.utils.arrayify(messageHash)
+    );
+
+    const data_hex = akf.interface.encodeFunctionData(
+        (tokenType === 'ETH' ? 'requestETH2TC' : 'requestTC') as any,
+        [
+          nonce,
+          this.wallet.address,
+          amountBTC,
+          tokenBuyPrice,
+          ethers.constants.MaxUint256,
+          signature,
+        ]
+    );
+    const result: any = await this.tradeAPI.sendTx({
+      contract_address: akf.address,
+      data_hex,
+    });
+    const r: any =
+        await this.gameWalletProvider.gameWallet?.provider.getTransaction(
+            result
+        );
+    await r.wait();
+    await this.assetContext.fetchAssets();
+    return;
+  } catch (error) {
+    errorLogger.report({
+      action: errorLogger.ERROR_LOGGER_TYPE.BUY_TC,
+      address: this.wallet.address,
+      error: JSON.stringify(error),
+      info: JSON.stringify({
+        userAmountBTC: userAmountBTC.toString(),
+        amountBTC: amountBTC.toString(),
+      }),
+    });
+    await this.getFaucet();
+    throw error;
+  }
+};
+
+
+export async function estimateTCGasFee ({
+                                          type,
+                                          needFeeTC,
+                                        }: {
+  type: ETypes;
+  needFeeTC?: any;
+}) {
+  const _needFeeTC = ceil(needFeeTC || typeToFee[type]);
+  console.log('_needFeeTC', _needFeeTC, typeToFee[type]);
+
+  let isBuy = false;
+
+  try {
+    const [amount, amountBTC] = await Promise.all([
+      gameWalletProvider.gameWallet?.provider.getBalance(
+          gameWalletProvider.gameWallet.address
+      ),
+      contract
+          .getERC20Contract(BTC_L2_ADDRESS)
+          .connect(wallet)
+          .balanceOf(wallet.address),
+    ]);
+
+
+    console.log(
+        'aaaa',
+        amountBTC.toString(),
+        BigNumber.from(amountBTC).gt('0')
+    );
+
+    if (
+        BigNumber.from(amount?.toString()).lt(parseEther('0.0005')) &&
+        BigNumber.from(amountBTC).gt('0')
+    ) {
+      const amountApprove = await this.contract
+          .getERC20Contract(BTC_L2_ADDRESS)
+          .allowance(this.wallet.address, ALPHA_KEY_FACTORY_ADDRESS);
+
+      if (BigNumber.from(amountApprove).lt(parseEther('1'))) {
+        await this.getFaucet();
+        const txApprove = await this.contract
+            .getERC20Contract(BTC_L2_ADDRESS)
+            .connect(this.wallet)
+            .approve(ALPHA_KEY_FACTORY_ADDRESS, ethers.constants.MaxUint256);
+        await txApprove.wait();
+        isBuy = true;
+      }
+    }
+
+
+    const gasPrice = await this.contract.provider?.getGasPrice();
+    const gasFee = new NBigNumber(_needFeeTC).multipliedBy(
+        gasPrice?.toString() as string
+    );
+    console.log(
+        'gasFee',
+        gasFee.toString(),
+        BigNumber.from(amount?.toString()).lt(gasFee.toString()),
+        amount?.toString()
+    );
+
+    if (
+        BigNumber.from(amount?.toString()).lt(parseEther('0.001')) ||
+        BigNumber.from(amount?.toString()).lt(gasFee.toString())
+    ) {
+      await this.buyTCFee(this.MIN_BUY_TC);
+      isBuy = true;
+    }
+  } catch (error) {
+    console.log('error', error);
+
+    isBuy = false;
+    throw error;
+  }
+
+  return isBuy;
+};
+*/

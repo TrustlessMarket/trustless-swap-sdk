@@ -7,7 +7,7 @@ import {CurrentConfig, CurrentWallet, WalletType} from './config'
 let mainnetProvider = new ethers.providers.JsonRpcProvider(
     CurrentConfig.rpc
 )
-let wallet:ethers.Wallet
+export  let wallet:ethers.Wallet
 
 let browserExtensionProvider : ethers.providers.Web3Provider | null
 let walletExtensionAddress: string | null = null
@@ -110,8 +110,9 @@ export async function connectBrowserExtensionWallet(provider:any = null) {
   }
 
   const accounts = await provider.send('eth_requestAccounts', [])
+  console.log('eth_requestAccounts',accounts)
 
-  if (accounts.length !== 1) {
+  if (accounts.length < 1) {
     return
   }
 

@@ -53,7 +53,7 @@ export const getListLiquidity = async (
 
 //TODO:  add type
 export const getTokens = async (limit:any): Promise<IToken[]> => {
-  return swrFetcher(`${CurrentConfig.API_ROOT}/api/token-explorer/tokens?limit=${limit.toString()}&network=${CurrentConfig.chainName}&page=1`, {
+  return swrFetcher(`${CurrentConfig.API_ROOT}/api/token-explorer/tokens?limit=${limit.toString()}&network=${CurrentConfig.network}&page=1`, {
     method: 'GET',
     error: 'Fail to get tokens data',
   });
@@ -62,7 +62,7 @@ export const getTokens = async (limit:any): Promise<IToken[]> => {
 export const getPositionDetail = async (
     id: number
 ): Promise<IPosition> => {
-  return swrFetcher(`${CurrentConfig.API_ROOT}/api/swap-v3/pool/user-position/${id}`, {
+  return swrFetcher(`${CurrentConfig.API_ROOT}/api/${CurrentConfig.swapApi}/pool/user-position/${id}?network=${CurrentConfig.network}`, {
     method: 'GET',
     error: 'Fail to get list user positions',
   });

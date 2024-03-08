@@ -1,12 +1,12 @@
 import JSBI from 'jsbi'
 import { Interface } from '@ethersproject/abi'
-import IPeripheryPaymentsWithFee from './IPeripheryPaymentsWithFee.json'
-import { Percent } from './entities/fractions/percent'
-import { Token } from './entities/token'
-import { validateAndParseAddress } from './utils/validateAndParseAddress'
-import { toHex } from './utils/calldata'
+import IPeripheryPaymentsWithFee from './IPeripheryPaymentsWithFeeNaka.json'
+import {Token} from './token'
+import { Percent} from './fractions/percent'
+import { validateAndParseAddress } from '../utils/validateAndParseAddress'
+import { toHex } from '../utils/calldata'
 
-export interface FeeOptions {
+export interface FeeOptionsNaka {
   /**
    * The percent of the output that will be taken as a fee.
    */
@@ -18,7 +18,7 @@ export interface FeeOptions {
   recipient: string
 }
 
-export abstract class Payments {
+export abstract class PaymentsNaka {
   public static INTERFACE: Interface = new Interface(IPeripheryPaymentsWithFee.abi)
 
   /**
@@ -30,21 +30,21 @@ export abstract class Payments {
     return toHex(fee.multiply(10_000).quotient)
   }
 
-  public static encodeUnwrapWETH9(amountMinimum: JSBI, recipient: string, feeOptions?: FeeOptions): string {
+  public static encodeUnwrapWETH9(amountMinimum: JSBI, recipient: string, feeOptions?: FeeOptionsNaka): string {
     recipient = validateAndParseAddress(recipient)
 
     if (!!feeOptions) {
       const feeBips = this.encodeFeeBips(feeOptions.fee)
       const feeRecipient: string = validateAndParseAddress(feeOptions.recipient)
 
-      return Payments.INTERFACE.encodeFunctionData('unwrapWETH9WithFee', [
+      return PaymentsNaka.INTERFACE.encodeFunctionData('unwrapWNAKAWithFee', [
         toHex(amountMinimum),
         recipient,
         feeBips,
         feeRecipient
       ])
     } else {
-      return Payments.INTERFACE.encodeFunctionData('unwrapWETH9', [toHex(amountMinimum), recipient])
+      return PaymentsNaka.INTERFACE.encodeFunctionData('unwrapWNAKA', [toHex(amountMinimum), recipient])
     }
   }
 
@@ -52,7 +52,7 @@ export abstract class Payments {
     token: Token,
     amountMinimum: JSBI,
     recipient: string,
-    feeOptions?: FeeOptions
+    feeOptions?: FeeOptionsNaka
   ): string {
     recipient = validateAndParseAddress(recipient)
 
@@ -60,7 +60,7 @@ export abstract class Payments {
       const feeBips = this.encodeFeeBips(feeOptions.fee)
       const feeRecipient: string = validateAndParseAddress(feeOptions.recipient)
 
-      return Payments.INTERFACE.encodeFunctionData('sweepTokenWithFee', [
+      return PaymentsNaka.INTERFACE.encodeFunctionData('sweepTokenWithFee', [
         token.address,
         toHex(amountMinimum),
         recipient,
@@ -68,11 +68,11 @@ export abstract class Payments {
         feeRecipient
       ])
     } else {
-      return Payments.INTERFACE.encodeFunctionData('sweepToken', [token.address, toHex(amountMinimum), recipient])
+      return PaymentsNaka.INTERFACE.encodeFunctionData('sweepToken', [token.address, toHex(amountMinimum), recipient])
     }
   }
 
   public static encodeRefundETH(): string {
-    return Payments.INTERFACE.encodeFunctionData('refundTC')
+    return PaymentsNaka.INTERFACE.encodeFunctionData('refundNAKA')
   }
 }

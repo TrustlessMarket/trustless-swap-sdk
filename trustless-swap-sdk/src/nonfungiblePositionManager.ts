@@ -1,32 +1,27 @@
-import {
-  BigintIsh} from './constants'
+import {ADDRESS_ZERO, BigintIsh} from './constants'
 import {Percent} from './entities/fractions/percent'
 import {Currency} from './entities/currency'
-import {
-  Token} from './entities/token'
-import {
-  CurrencyAmount} from './entities/fractions/currencyAmount'
-import {
-  validateAndParseAddress} from './utils/validateAndParseAddress'
-import {
-  NativeCurrency} from './entities/nativeCurrency'
+import {Token} from './entities/token'
+import {CurrencyAmount} from './entities/fractions/currencyAmount'
+import {validateAndParseAddress} from './utils/validateAndParseAddress'
+import {NativeCurrency} from './entities/nativeCurrency'
 
-import {CurrentConfig} from './config'
+import {CurrentConfig, Environment} from './config'
 
 
 import JSBI from 'jsbi'
 import invariant from 'tiny-invariant'
-import { Position } from './entities/position'
-import { ONE, ZERO } from './internalConstants'
-import { MethodParameters, toHex } from './utils/calldata'
-import { Interface } from '@ethersproject/abi'
+import {Position} from './entities/position'
+import {ONE, ZERO} from './internalConstants'
+import {MethodParameters, toHex} from './utils/calldata'
+import {Interface} from '@ethersproject/abi'
 import INonfungiblePositionManager from './Nonfungible.json'
-import { PermitOptions, SelfPermit } from './selfPermit'
-import { ADDRESS_ZERO } from './constants'
-import { Pool } from './entities'
-import { Multicall } from './multicall'
-import { Payments } from './payments'
-import { fromReadableAmount} from './utils1'
+import {PermitOptions, SelfPermit} from './selfPermit'
+import {Pool} from './entities'
+import {Multicall} from './multicall'
+import {Payments} from './entities/payments'
+import {PaymentsNaka} from './entities/paymentsNaka'
+import {fromReadableAmount} from './utils1'
 
 
 const MaxUint128 = toHex(JSBI.subtract(JSBI.exponentiate(JSBI.BigInt(2), JSBI.BigInt(128)), JSBI.BigInt(1)))
@@ -371,7 +366,12 @@ export abstract class NonfungiblePositionManager {
     if (token0.toLowerCase() === CurrentConfig.TC_CONTRACT_ADDRESS.toLowerCase() || token1.toLowerCase() === CurrentConfig.TC_CONTRACT_ADDRESS.toLowerCase()) {
       const wrappedValue = token0.toLowerCase() === CurrentConfig.TC_CONTRACT_ADDRESS.toLowerCase() ? fromReadableAmount(amountADesired,18) : fromReadableAmount(amountBDesired,18)
       if (wrappedValue.gt(0)) {
-        calldatas.push(Payments.encodeRefundETH())
+        if(CurrentConfig.env== Environment.NAKAMAINNET||CurrentConfig.env== Environment.NAKATESTNET)
+        {
+          calldatas.push(PaymentsNaka.encodeRefundETH())
+        }else{
+          calldatas.push(Payments.encodeRefundETH())
+        }
       }
       value =toHex(wrappedValue.toString())
     }
@@ -456,7 +456,12 @@ export abstract class NonfungiblePositionManager {
 
       // we only need to refund if we're actually sending ETH
       if (JSBI.greaterThan(wrappedValue, ZERO)) {
-        calldatas.push(Payments.encodeRefundETH())
+        if(CurrentConfig.env== Environment.NAKAMAINNET||CurrentConfig.env== Environment.NAKATESTNET)
+        {
+          calldatas.push(PaymentsNaka.encodeRefundETH())
+        }else{
+          calldatas.push(Payments.encodeRefundETH())
+        }
       }
 
       value = toHex(wrappedValue)
@@ -501,8 +506,15 @@ export abstract class NonfungiblePositionManager {
         ? options.expectedCurrencyOwed1.quotient
         : options.expectedCurrencyOwed0.quotient
 
-      calldatas.push(Payments.encodeUnwrapWETH9(ethAmount, recipient))
-      calldatas.push(Payments.encodeSweepToken(token, tokenAmount, recipient))
+      if(CurrentConfig.env== Environment.NAKAMAINNET||CurrentConfig.env== Environment.NAKATESTNET)
+      {
+        calldatas.push(PaymentsNaka.encodeUnwrapWETH9(ethAmount, recipient))
+        calldatas.push(PaymentsNaka.encodeSweepToken(token, tokenAmount, recipient))
+      }else{
+        calldatas.push(Payments.encodeUnwrapWETH9(ethAmount, recipient))
+        calldatas.push(Payments.encodeSweepToken(token, tokenAmount, recipient))
+      }
+
     }
 
     return calldatas
