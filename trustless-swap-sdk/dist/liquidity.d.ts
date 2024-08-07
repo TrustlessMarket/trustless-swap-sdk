@@ -1,0 +1,36 @@
+import { BigNumber } from 'ethers';
+import { TransactionState } from './providers';
+import { Position } from './entities/position';
+import { Token } from './entities/token';
+import { CurrencyAmount } from './entities/fractions/currencyAmount';
+import { ILiquidity } from './interfaces/liquidity';
+import { IToken } from './interfaces/token';
+import { IPosition } from './interfaces/position';
+export declare const getListLiquidity: (address?: string | undefined) => Promise<ILiquidity[]>;
+export declare const getTokens: (limit: any) => Promise<IToken[]>;
+export declare const getPositionDetail: (id: number) => Promise<IPosition>;
+export interface PositionInfo {
+    tickLower: number;
+    tickUpper: number;
+    liquidity: BigNumber;
+    feeGrowthInside0LastX128: BigNumber;
+    feeGrowthInside1LastX128: BigNumber;
+    tokensOwed0: BigNumber;
+    tokensOwed1: BigNumber;
+}
+export declare function CollectFeeeById(tokenId: any): Promise<TransactionState>;
+export declare function increaseLiquidity(tokenId: any, amount0Desired: any, amount1Desired: any, amount0Min: any, amount1Min: any, deadline: any): Promise<TransactionState>;
+export declare function decreaseLiquidity(tokenId: any, liquidity: any, amount0Min: any, amount1Min: any, deadline: any): Promise<TransactionState>;
+export declare function removePosition(tokenId: any): Promise<TransactionState>;
+export declare function addLiquidityIncludeCreatePool(isNewPool: Boolean, fee: any, token0: any, token1: any, amountADesired: any, amountBDesired: any, lowerTick: any, upperTick: any, amount0Min: any, amount1Min: any, currentPrice: any, deadline: any): Promise<TransactionState>;
+export declare function addLiquidity(positionId: number): Promise<TransactionState>;
+export declare function removeLiquidity(positionId: number): Promise<TransactionState>;
+export declare function getPositionIds(): Promise<number[]>;
+export declare function getPositionInfo(tokenId: number): Promise<PositionInfo>;
+export declare function getTokenTransferApprovalPosition(token: Token): Promise<TransactionState>;
+export declare function constructPosition(token0Amount: CurrencyAmount<Token>, token1Amount: CurrencyAmount<Token>): Promise<Position>;
+export declare function mintPosition(): Promise<TransactionState>;
+export declare function getEarnedFee(tokenId: any): Promise<any>;
+export declare function getPoolAddress(token0: any, token1: any, fee: any): Promise<any>;
+export declare function getPoolFromAddress(poolAddress: any): Promise<any>;
+export declare function getPositionImage(tokenId: any): Promise<any>;

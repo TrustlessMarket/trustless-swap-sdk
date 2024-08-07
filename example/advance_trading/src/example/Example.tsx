@@ -47,7 +47,7 @@ const getList = async () => {
 
     try {
         const res = await fetch(
-            "https://dex-api.fprotocol.io"+`/api/swap/token/list/v1?is_test=&limit=500&network=nos&page=1`,
+            "https://dex-api.newbitcoincity.com"+`/api/swap/token/list/v1?is_test=&limit=500&network=nos&page=1`,
         ).then((res) => {
             return res.json();
         });
@@ -148,7 +148,7 @@ const Example = () => {
         select1 = selectedOption.value
         options2 = []
         const res = await fetch(
-            "https://dex-api.fprotocol.io"+`/api/swap/token/list/v1?from_token=`+selectedOption.value+`&is_test=&limit=500&network=nos&page=1`,
+            "https://dex-api.newbitcoincity.com"+`/api/swap/token/list/v1?from_token=`+selectedOption.value+`&is_test=&limit=500&network=nos&page=1`,
         ).then((res) => {
             return res.json()
         });
